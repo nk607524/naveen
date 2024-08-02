@@ -1,1 +1,127 @@
+#pragma once
+
+#include <QPushButton>
+#include <QColor>
+#include <QPainter>
+#include <QPen>
+#include <QDebug>
+
+class CustomPushButton  : public QPushButton
+{
+	Q_OBJECT
+
+public:
+	CustomPushButton(QWidget *parent);
+	~CustomPushButton();
+
+    void setColor(const QColor& newColor);
+   
+
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+
+private:
+    QColor color;
+};
+
+
+
+
+#include "CustomPushButton.h"
+#include <QDebug>
+
+CustomPushButton::CustomPushButton(QWidget *parent)
+	: QPushButton(parent)
+{
+}
+
+CustomPushButton::~CustomPushButton()
+{}
+
+
+
+void CustomPushButton::setColor(const QColor& newColor) {
+    color = newColor;
+    update();
+}
+
+
+
+
+void CustomPushButton::paintEvent(QPaintEvent* event)
+{
+    QPushButton::paintEvent(event); 
+
+    QPainter painter(this);
+    QPen pen;
+    pen.setColor(Qt::black); 
+    painter.setPen(pen);
+
+    painter.setBrush(color);
+
+    int margin = 10;
+    int rectSize = qMin(width(), height()) - 2 * margin; 
+    QRect rect(margin, margin, rectSize, rectSize);
+    //QRect rect(10, 10, 0, 0);
+
+    painter.drawRect(rect);
+
+    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
+ 
+painter.drawText(rect.right() + 10, rect.top() + rect.height() / 2, rgbText); // Position of the text
+}
+
+
+
+
+
+
+#pragma once
+
+#include <QtWidgets/QWidget>
+#include "ui_QtWidgetsApplication1.h"
+#include <QPainter>
+#include <QPen>
+#include "CustomPushButton.h"
+#include <QDebug>
+
+class QtWidgetsApplication1 : public QWidget
+{
+    Q_OBJECT
+
+public:
+    QtWidgetsApplication1(QWidget *parent = nullptr);
+    ~QtWidgetsApplication1();
+
+private:
+    Ui::QtWidgetsApplication1Class ui;
+};
+
+
+
+
+
+#include "QtWidgetsApplication1.h"
+
+QtWidgetsApplication1::QtWidgetsApplication1(QWidget *parent)
+    : QWidget(parent)
+{
+    ui.setupUi(this);
+
+
+    CustomPushButton* customButton = new CustomPushButton(this);
+    customButton->setGeometry(ui.pushButton->geometry());
+    customButton->setColor(QColor(0, 0, 0)); 
+    //ui.pushButton->hide(); 
+   
+}
+
+QtWidgetsApplication1::~QtWidgetsApplication1()
+{}
+
+
+
+
+
 
