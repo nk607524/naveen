@@ -1,127 +1,171 @@
 #pragma once
 
-#include <QPushButton>
-#include <QColor>
-#include <QPainter>
-#include <QPen>
-#include <QDebug>
-
-class CustomPushButton  : public QPushButton
-{
-	Q_OBJECT
-
-public:
-	CustomPushButton(QWidget *parent);
-	~CustomPushButton();
-
-    void setColor(const QColor& newColor);
-   
-
-
-protected:
-    void paintEvent(QPaintEvent* event) override;
-
-private:
-    QColor color;
-};
-
-
-
-
-#include "CustomPushButton.h"
-#include <QDebug>
-
-CustomPushButton::CustomPushButton(QWidget *parent)
-	: QPushButton(parent)
-{
-}
-
-CustomPushButton::~CustomPushButton()
-{}
-
-
-
-void CustomPushButton::setColor(const QColor& newColor) {
-    color = newColor;
-    update();
-}
-
-
-
-
-void CustomPushButton::paintEvent(QPaintEvent* event)
-{
-    QPushButton::paintEvent(event); 
-
-    QPainter painter(this);
-    QPen pen;
-    pen.setColor(Qt::black); 
-    painter.setPen(pen);
-
-    painter.setBrush(color);
-
-    int margin = 10;
-    int rectSize = qMin(width(), height()) - 2 * margin; 
-    QRect rect(margin, margin, rectSize, rectSize);
-    //QRect rect(10, 10, 0, 0);
-
-    painter.drawRect(rect);
-
-    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
- 
-painter.drawText(rect.right() + 10, rect.top() + rect.height() / 2, rgbText); // Position of the text
-}
-
-
-
-
-
-
-#pragma once
-
 #include <QtWidgets/QWidget>
-#include "ui_QtWidgetsApplication1.h"
-#include <QPainter>
-#include <QPen>
-#include "CustomPushButton.h"
-#include <QDebug>
+#include "ui_colour.h"
+#include <QColor>
+#include <QPushButton>
 
-class QtWidgetsApplication1 : public QWidget
+
+class colour : public QWidget
 {
     Q_OBJECT
 
 public:
-    QtWidgetsApplication1(QWidget *parent = nullptr);
-    ~QtWidgetsApplication1();
+    colour(QWidget *parent = nullptr);
+    ~colour();
+
+private slots:
+    void on_pushButton_clicked();
+
 
 private:
-    Ui::QtWidgetsApplication1Class ui;
+    Ui::colourClass ui;
+
+    void drawOnButton(QPushButton* button, const QColor& color);
+    QColor color;
+    QPushButton* naveen;
+    void on_naveen_clicked();
+
 };
 
 
 
 
 
-#include "QtWidgetsApplication1.h"
 
-QtWidgetsApplication1::QtWidgetsApplication1(QWidget *parent)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include "colour.h"
+#include <QColorDialog>
+#include <QPixmap>
+#include <QPainter>
+
+
+
+colour::colour(QWidget *parent)
     : QWidget(parent)
 {
     ui.setupUi(this);
 
+    color = QColor(0, 255, 0); // Default color
+    drawOnButton(ui.pushButton, color); // Draw on button initially
 
-    CustomPushButton* customButton = new CustomPushButton(this);
-    customButton->setGeometry(ui.pushButton->geometry());
-    customButton->setColor(QColor(0, 0, 0)); 
-    //ui.pushButton->hide(); 
-   
+    // Connect the button's clicked signal to the slot
+    connect(ui.pushButton, &QPushButton::clicked, this, &colour::on_pushButton_clicked);
+    connect(naveen, &QPushButton::clicked, this, &colour::on_naveen_clicked);
+
+    naveen = new QPushButton(this);
+
+    drawOnButton(naveen, color);
+
+
 }
 
-QtWidgetsApplication1::~QtWidgetsApplication1()
+colour::~colour()
 {}
 
 
+void colour::drawOnButton(QPushButton* button, const QColor& color)
+{
+    // Create a QPixmap with the same size as the button
+
+    QPixmap pixmap(button->size());
+    pixmap.fill(Qt::transparent); // Start with a transparent background
+
+    QPainter painter(&pixmap);
+    painter.setPen(Qt::black); // Pen color for the rectangle border
+    painter.setBrush(color); // Brush color for the rectangle fill
+
+    // Rectangle dimensions
+    int rectWidth = pixmap.width() / 4; // Width of the rectangle
+    int rectHeight = pixmap.height() / 2; // Height of the rectangle
+
+    // Calculate position
+    int x = 0; // X-coordinate for the left side
+    int y = (pixmap.height() - rectHeight) / 2; // Center the rectangle vertically
+
+    // Draw the rectangle
+    painter.drawRect(x, y, rectWidth, rectHeight);
+
+    // Draw the RGB values as text
+    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
+    painter.setPen(Qt::black); // Set text color
+    painter.drawText(pixmap.rect().adjusted(rectWidth, rectHeight - 10, -10, -10), rgbText); // Draw the text
+
+    // Set the pixmap as the button's icon
+    button->setIcon(QIcon(pixmap));
+    button->setIconSize(button->size()); // Ensure the icon size matches the button size
+
+}
 
 
 
 
+//void colour::drawOnButton(QPushButton* button, const QColor& color)
+//{
+//    // Create a QPixmap with the same size as the button
+//
+//    QPixmap pixmap(button->size());
+//    pixmap.fill(Qt::transparent); // Start with a transparent background
+//
+//    QPainter painter(&pixmap);
+//    painter.setPen(Qt::black); // Pen color for the rectangle border
+//    painter.setBrush(color); // Brush color for the rectangle fill
+//
+//    // Rectangle dimensions
+//    int rectWidth = pixmap.width() / 4; // Width of the rectangle
+//    int rectHeight = pixmap.height() / 2; // Height of the rectangle
+//
+//    // Calculate position
+//    int x = 0; // X-coordinate for the left side
+//    int y = (pixmap.height() - rectHeight) / 2; // Center the rectangle vertically
+//
+//    // Draw the rectangle
+//    painter.drawRect(x, y, rectWidth, rectHeight);
+//
+//    // Draw the RGB values as text
+//    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
+//    painter.setPen(Qt::black); // Set text color
+//    painter.drawText(pixmap.rect().adjusted(rectWidth, rectHeight - 10, -10, -10), rgbText); // Draw the text
+//
+//    // Set the pixmap as the button's icon
+//    button->setIcon(QIcon(pixmap));
+//    button->setIconSize(button->size()); // Ensure the icon size matches the button size
+//
+//}
+
+
+
+
+void colour::on_pushButton_clicked()
+{
+    QColor selectedColor = QColorDialog::getColor(color, this, "Select Color");
+
+    if (selectedColor.isValid()) {
+        color = selectedColor;
+        drawOnButton(ui.pushButton, color); // Redraw the button with the new color
+    }
+}
+
+
+void colour::on_naveen_clicked()
+{
+    QColor selectedColor = QColorDialog::getColor(color, this, "Select Color");
+
+    if (selectedColor.isValid()) {
+        color = selectedColor;
+        drawOnButton(naveen, color); // Redraw the button with the new color
+    }
+}
