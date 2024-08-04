@@ -24,7 +24,7 @@ private:
     void drawOnButton(QPushButton* button, const QColor& color);
     QColor color;
     QPushButton* naveen;
-    void on_naveen_clicked();
+    void naveen2();
 
 };
 
@@ -64,11 +64,13 @@ colour::colour(QWidget *parent)
 
     // Connect the button's clicked signal to the slot
     connect(ui.pushButton, &QPushButton::clicked, this, &colour::on_pushButton_clicked);
-    connect(naveen, &QPushButton::clicked, this, &colour::on_naveen_clicked);
 
     naveen = new QPushButton(this);
 
     drawOnButton(naveen, color);
+
+    connect(naveen, &QPushButton::clicked, this, &colour::naveen2());
+
 
 
 }
@@ -160,7 +162,7 @@ void colour::on_pushButton_clicked()
 }
 
 
-void colour::on_naveen_clicked()
+void colour::naveen2()
 {
     QColor selectedColor = QColorDialog::getColor(color, this, "Select Color");
 
