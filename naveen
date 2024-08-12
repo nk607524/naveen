@@ -1,173 +1,340 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//   This material contains, and is a part of a computer software program     //
+//   which is, proprietary and confidential information owned by:             //
+//                  Honeywell Technologies Solution Lab, INC.                 //
+//   The program, including this material, may not be duplicated, disclosed   //
+//   or reproduced in whole or in part for any purpose without the express    //
+//   written authorization of Honeywell.  All authorized                      //
+//   reproductions must be marked with this legend.                           //
+//                                                                            //
+//              © 2006 Honeywell Technologies Solution Lab, Inc.              //
+//              Honeywell Technologies Solution Lab, Incorporated             //
+//                            All rights reserved.                            //
+//                                                                            //
+//----------------------------------------------------------------------------//
+//
+//    MODULE NAME       :   BrushSealGeometry.h
+//
+//    DESCRIPTIVE NAME  :   CBrushSealGeometry Class Definition
+//
+//    MODULE FUNCTION   :   Header File for BrushSealGeometry Engineering object
+//
+//    MODULE AUTHOR     :   Vijay Varanasi
+//
+//    DATE MODULE WRITTEN:  7th Aug 2006
+//
+//----------------------------------------------------------------------------
+//
+//
+// History:
+// 
+//
+
 #pragma once
 
-#include <QtWidgets/QWidget>
-#include "ui_colour.h"
-#include <QColor>
-#include <QPushButton>
+#ifndef	_CBrushSealGeometry_HeaderFile_
+#define _CBrushSealGeometry_HeaderFile_
+
+#ifndef _TCollection_AsciiString_HeaderFile
+#include <TCollection_AsciiString.hxx> 
+#endif //_TCollection_AsciiString_HeaderFile
+
+#ifndef NCollection_DefineList_HeaderFile
+#include <NCollection_DefineList.hxx>
+#endif //NCollection_DefineList_HeaderFile
+
+#ifndef __CGeometricAttributes_HeaderFile__
+#include <GeometricAttributes.h>
+#endif //__CGeometricAttribute_HeaderFile__
+
+#ifndef __VNet_1_0DocController_HeaderFile__
+#include <VNet_1_0DocController.h>
+#endif //__VNet_1_0DocController_HeaderFile__
 
 
-class colour : public QWidget
-{
-    Q_OBJECT
+// Class Definition
+
+class CBrushSealGeometry : public CGeometricAttributes{
 
 public:
-    colour(QWidget *parent = nullptr);
-    ~colour();
+	CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource); //hint
+	CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource,const TCollection_AsciiString& l_strID); //hint
+	
+	virtual ~CBrushSealGeometry ();
 
-private slots:
-    void on_pushButton_clicked();
+	virtual void SetRadius(TCollection_AsciiString& pRadius);
+	void SetGeomAttribID(TCollection_AsciiString& pGeomObjID);
+	virtual void SetGeomID(TCollection_AsciiString& l_strID)
+	{
+	}
 
+	virtual TCollection_AsciiString GetRadius();
+	TCollection_AsciiString GetGeomObjID();
+	TCollection_AsciiString GetObjectID();
 
+protected:
+	CBrushSealGeometry()
+	{
+	}
+	Ptr(HFWDataRow) m_pBSGeomDataRow;
+		
 private:
-    Ui::colourClass ui;
-
-    void drawOnButton(QPushButton* button, const QColor& color);
-    QColor color;
-    QPushButton* naveen;
-    void naveen2();
-
 };
+DEFINE_SMART_PTR(CBrushSealGeometry,CGeometricAttributes)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#include "colour.h"
-#include <QColorDialog>
-#include <QPixmap>
-#include <QPainter>
-
-
-
-colour::colour(QWidget *parent)
-    : QWidget(parent)
-{
-    ui.setupUi(this);
-
-    color = QColor(0, 255, 0); // Default color
-    drawOnButton(ui.pushButton, color); // Draw on button initially
-
-    // Connect the button's clicked signal to the slot
-    connect(ui.pushButton, &QPushButton::clicked, this, &colour::on_pushButton_clicked);
-
-    naveen = new QPushButton(this);
-
-    drawOnButton(naveen, color);
-
-    connect(naveen, &QPushButton::clicked, this, &colour::naveen2());
-
-
-
-}
-
-colour::~colour()
-{}
-
-
-void colour::drawOnButton(QPushButton* button, const QColor& color)
-{
-    // Create a QPixmap with the same size as the button
-
-    QPixmap pixmap(button->size());
-    pixmap.fill(Qt::transparent); // Start with a transparent background
-
-    QPainter painter(&pixmap);
-    painter.setPen(Qt::black); // Pen color for the rectangle border
-    painter.setBrush(color); // Brush color for the rectangle fill
-
-    // Rectangle dimensions
-    int rectWidth = pixmap.width() / 4; // Width of the rectangle
-    int rectHeight = pixmap.height() / 2; // Height of the rectangle
-
-    // Calculate position
-    int x = 0; // X-coordinate for the left side
-    int y = (pixmap.height() - rectHeight) / 2; // Center the rectangle vertically
-
-    // Draw the rectangle
-    painter.drawRect(x, y, rectWidth, rectHeight);
-
-    // Draw the RGB values as text
-    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
-    painter.setPen(Qt::black); // Set text color
-    painter.drawText(pixmap.rect().adjusted(rectWidth, rectHeight - 10, -10, -10), rgbText); // Draw the text
-
-    // Set the pixmap as the button's icon
-    button->setIcon(QIcon(pixmap));
-    button->setIconSize(button->size()); // Ensure the icon size matches the button size
-
-}
-
-
-
-
-//void colour::drawOnButton(QPushButton* button, const QColor& color)
+////class for legacy model
+//class CBrushSealGeometryLegacy: public CBrushSealGeometry
 //{
-//    // Create a QPixmap with the same size as the button
 //
-//    QPixmap pixmap(button->size());
-//    pixmap.fill(Qt::transparent); // Start with a transparent background
+//public:
+//	CBrushSealGeometryLegacy(const Ptr(CVNet_1_0DocController)& l_rpDocCtrl)
+//	{
+//		m_pDataSrc = l_rpDocCtrl->GetDataSource();
+//	}
+//	~CBrushSealGeometryLegacy()
+//	{
+//	}
 //
-//    QPainter painter(&pixmap);
-//    painter.setPen(Qt::black); // Pen color for the rectangle border
-//    painter.setBrush(color); // Brush color for the rectangle fill
+//	void SetRadius(TCollection_AsciiString& pRadius)
+//	{
+//		m_strRad = pRadius;
+//	}
+//	void SetLength(TCollection_AsciiString& pLength)
+//	{
+//		m_strLen = pLength;
+//	}
+//	void SetSealTilt(TCollection_AsciiString& pSealTilt)
+//	{
+//		m_strSealTilt = pSealTilt;
+//	}
+//	void SetGeomID(TCollection_AsciiString& l_strID)
+//	{
+//		m_strID = l_strID;
+//	}
 //
-//    // Rectangle dimensions
-//    int rectWidth = pixmap.width() / 4; // Width of the rectangle
-//    int rectHeight = pixmap.height() / 2; // Height of the rectangle
 //
-//    // Calculate position
-//    int x = 0; // X-coordinate for the left side
-//    int y = (pixmap.height() - rectHeight) / 2; // Center the rectangle vertically
 //
-//    // Draw the rectangle
-//    painter.drawRect(x, y, rectWidth, rectHeight);
+//	TCollection_AsciiString GetRadius()
+//	{
+//		return m_strRad;
+//	}
+//	TCollection_AsciiString GetLength()
+//	{
+//		return m_strLen;
+//	}
+//	TCollection_AsciiString GetSealTilt()
+//	{
+//		return m_strSealTilt;
+//	}
 //
-//    // Draw the RGB values as text
-//    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
-//    painter.setPen(Qt::black); // Set text color
-//    painter.drawText(pixmap.rect().adjusted(rectWidth, rectHeight - 10, -10, -10), rgbText); // Draw the text
+//	void UpdateXMLDataSrc()
+//	{
+//		if(m_strID.IsEmpty())
+//			return;
 //
-//    // Set the pixmap as the button's icon
-//    button->setIcon(QIcon(pixmap));
-//    button->setIconSize(button->size()); // Ensure the icon size matches the button size
+//		//get table
+//		Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("BrushSealGeometry");
+//		//set row object
+//		m_pRSGeomDataRow = l_pDataTab->GetRow(m_strID);
+//		
+//		//update in engg object
+//		CBrushSealGeometry::SetRadius(m_strRad);
+//		CBrushSealGeometry::SetLength(m_strLen);
+//		CBrushSealGeometry::SetSealTilt(m_strSealTilt);
+//	}
 //
-//}
+//
+//protected:
+//	TCollection_AsciiString				m_strRad;
+//	TCollection_AsciiString				m_strLen;
+//	TCollection_AsciiString				m_strSealTilt;
+//
+//	TCollection_AsciiString				m_strID;
+//
+//private:
+//
+//};
+//
+//DEFINE_SMART_PTR(CBrushSealGeometryLegacy,CBrushSealGeometry)
+
+#endif //_CBrushSealGeometry_HeaderFile_
 
 
 
+//----------------------------------------------------------------------------//
+//                                                                            //
+//   This material contains, and is a part of a computer software program     //
+//   which is, proprietary and confidential information owned by:             //
+//                  Honeywell Technologies Solution Lab, INC.                 //
+//   The program, including this material, may not be duplicated, disclosed   //
+//   or reproduced in whole or in part for any purpose without the express    //
+//   written authorization of Honeywell.  All authorized                      //
+//   reproductions must be marked with this legend.                           //
+//                                                                            //
+//              © 2006 Honeywell Technologies Solution Lab, Inc.              //
+//              Honeywell Technologies Solution Lab, Incorporated             //
+//                            All rights reserved.                            //
+//                                                                            //
+//----------------------------------------------------------------------------//
+//
+//    MODULE NAME       :   RingSealGeometry.h
+//
+//    DESCRIPTIVE NAME  :   CRingSealGeometry Class Definition
+//
+//    MODULE FUNCTION   :   Source file for RingSealGeometry EngineeringObject
+//
+//    MODULE AUTHOR     :   Vijay Varanasi
+//
+//    DATE MODULE WRITTEN:  23/08/2006 02:25:00 PM
+//
+//----------------------------------------------------------------------------
+//
+//
+// History:
+// 
+//
+/****************************************************************************** 
+ *                                                                            * 
+ *                           Program Include Files                            * 
+ *                                                                            * 
+ ******************************************************************************/
+#include "stdafx.h"
+#ifndef	_CBrushSealGeometry_HeaderFile_
+#include <BrushSealGeometry.h>
+#endif //_CBrushSealGeometry_HeaderFile_
 
-void colour::on_pushButton_clicked()
+//////////////////////////////// PUBLIC ///////////////////////////////////////  
+//================================ LIFECYCLE ================================== 
+//======================= Construction and Destruction ======================== 
+/*******************************************************************************/
+//   Function Name  :   Constructor with parameters
+//   Parameters     :   const Ptr(CVNet_1_0DocController)& -->DocController Obj
+//   Description    :   
+//   Modify History :
+//      1.              Date    ->  23/08/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+CBrushSealGeometry::CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource)
+				  :CGeometricAttributes(l_pDataSource)  //hint
 {
-    QColor selectedColor = QColorDialog::getColor(color, this, "Select Color");
+	Raise_If_NULL_SMART_PTR( l_pDataSource,"CBrushSealGeometry::CBrushSealGeometry"); //hint
 
-    if (selectedColor.isValid()) {
-        color = selectedColor;
-        drawOnButton(ui.pushButton, color); // Redraw the button with the new color
-    }
+	Ptr(HFWDataTable) l_pDataTab = l_pDataSource->GetTable("BrushSealGeometry"); //hint
+	m_pBSGeomDataRow = l_pDataTab->AddNewRow();
+
+	//Setting the Geometric Attributes ID
+	SetGeomAttribID(CGeometricAttributes::GetObjectID());
+}
+/*******************************************************************************/
+//   Function Name  :   Constructor with Parameters
+//   Parameters     :   const Ptr(CVNet_1_0DocController)& -> Doc Controller Object
+//						const TCollection_AsciiString& - Row ID 
+//   Description    :   
+//   Modify History :
+//      1.              Date    ->  23/08/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+CBrushSealGeometry::CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource,
+									  const TCollection_AsciiString& l_strID)
+									  :CGeometricAttributes() //hint
+{
+	Raise_If_NULL_SMART_PTR( l_pDataSource,"CBrushSealGeometry::CBrushSealGeometry"); //hint
+	m_pDataSrc = l_pDataSource->GetDataSource(); //hint
+	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("BrushSealGeometry");
+	m_pBSGeomDataRow = l_pDataTab->GetRow(l_strID);
+
+	//Geometric Attribute Row
+	Ptr(HFWDataTable) l_pGeomDataTab = m_pDataSrc->GetTable("GeometricAttributes");
+	m_pDataRow = l_pGeomDataTab->GetRow(m_pBSGeomDataRow->GetColumn("GeometricAttributesObjID")->GetData());
 }
 
-
-void colour::naveen2()
+/*******************************************************************************/
+//   Function Name  :   Destructor
+//   Parameters     :   
+//   Description    :   
+//   Modify History :-
+//      1.              Date    ->  23/08/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+CBrushSealGeometry::~CBrushSealGeometry ()
 {
-    QColor selectedColor = QColorDialog::getColor(color, this, "Select Color");
+}
 
-    if (selectedColor.isValid()) {
-        color = selectedColor;
-        drawOnButton(naveen, color); // Redraw the button with the new color
-    }
+/*******************************************************************************/
+//   Function Name  :   SetRadius
+//   Parameters     :   TCollection_AsciiString&
+//   Description    :   Sets the Radius
+//   Modify History :
+//      1.              Date    ->  23/08/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+void CBrushSealGeometry::SetRadius(TCollection_AsciiString& pRadius)
+{
+	m_pBSGeomDataRow->GetColumn("Radius")->SetData(pRadius);
+}
+
+/*******************************************************************************/
+//   Function Name  :   GetRadius
+//   Parameters     :   
+//	 Return			:	TCollection_AsciiString
+//   Description    :   Returns the Radius
+//   Modify History :
+//      1.              Date    ->  23/08/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+
+TCollection_AsciiString CBrushSealGeometry::GetRadius()
+{
+	return m_pBSGeomDataRow->GetColumn("Radius")->GetData();
+}
+/*******************************************************************************/
+//   Function Name  :   GetGeomObjID
+//   Parameters     :   
+//	 Return			:	TCollection_AsciiString
+//   Description    :   Returns the Geometry Attributes Object ID
+//   Modify History :
+//      1.              Date    ->  20/09/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+
+TCollection_AsciiString  CBrushSealGeometry::GetGeomObjID()
+{
+	return m_pBSGeomDataRow->GetColumn("GeometricAttributesObjID")->GetData();
+}
+
+/*******************************************************************************/
+//   Function Name  :   SetGeomAttribID
+//   Parameters     :   TCollection_AsciiString&
+//	 Return			:	
+//   Description    :   Sets the Geometric Attributes Object ID
+//   Modify History :
+//      1.              Date    ->  20/09/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+void  CBrushSealGeometry::SetGeomAttribID(TCollection_AsciiString& pGeomObjID)
+{
+	m_pBSGeomDataRow->GetColumn("GeometricAttributesObjID")->SetData(pGeomObjID);
+}
+/*******************************************************************************/
+//   Function Name  :   GetObjectID
+//   Parameters     :   
+//	 Return			:	TCollection_AsciiString 
+//   Description    :   Return the Object ID
+//   Modify History :
+//      1.              Date    ->  28/09/2006 
+//                      Author  ->  Vijay Varanasi
+//                      Purpose ->  Created
+/*******************************************************************************/
+TCollection_AsciiString CBrushSealGeometry::GetObjectID()
+{
+	return m_pBSGeomDataRow->GetRowID();
 }
