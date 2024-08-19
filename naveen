@@ -76,7 +76,7 @@ public:
 	//	const TCollection_AsciiString& l_strID,
 	//	Standard_Integer p_bSeriesCurve =0
 	//	);
-	CFlowTableSeriesCurveMapper(const Ptr(HFWDataSource)& l_pDataSrc,
+	CFlowTableSeriesCurveMapper(const Ptr(HFWDataSource)& ,
 		const TCollection_AsciiString& l_strID);
 	
 	virtual ~CFlowTableSeriesCurveMapper ();
