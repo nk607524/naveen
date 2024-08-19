@@ -14,15 +14,15 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 //
-//    MODULE NAME       :   BrushSealGeometry.h
+//    MODULE NAME       :   FlowTableSeriesCurveMapper.h
 //
-//    DESCRIPTIVE NAME  :   CBrushSealGeometry Class Definition
+//    DESCRIPTIVE NAME  :   CFlowTableSeriesCurveMapper Class Definition
 //
-//    MODULE FUNCTION   :   Header File for BrushSealGeometry Engineering object
+//    MODULE FUNCTION   :   Header File for FlowTableSeriesCurveMapper Engineering object
 //
-//    MODULE AUTHOR     :   Vijay Varanasi
+//    MODULE AUTHOR     :   Gaurav Banda
 //
-//    DATE MODULE WRITTEN:  7th Aug 2006
+//    DATE MODULE WRITTEN:  14th Nov 2007
 //
 //----------------------------------------------------------------------------
 //
@@ -33,8 +33,8 @@
 
 #pragma once
 
-#ifndef	_CBrushSealGeometry_HeaderFile_
-#define _CBrushSealGeometry_HeaderFile_
+#ifndef	_CSeriesCurveMapper_HeaderFile_
+#define _CseriesCurveMapper_HeaderFile_
 
 #ifndef _TCollection_AsciiString_HeaderFile
 #include <TCollection_AsciiString.hxx> 
@@ -44,122 +44,172 @@
 #include <NCollection_DefineList.hxx>
 #endif //NCollection_DefineList_HeaderFile
 
-#ifndef __CGeometricAttributes_HeaderFile__
-#include <GeometricAttributes.h>
-#endif //__CGeometricAttribute_HeaderFile__
+#ifndef __CEngineeringObject_HeaderFile__
+#include <EngineeringObject.h>
+#endif //__CEngineeringObject_HeaderFile__
 
 #ifndef __VNet_1_0DocController_HeaderFile__
 #include <VNet_1_0DocController.h>
 #endif //__VNet_1_0DocController_HeaderFile__
 
+#ifndef __CTableDataParametersList_HeaderFile_
+#include <TableDataParametersList.h>
+#endif //__CTableDataParametersList_HeaderFile_
+
+#include "Util.h"
+
+typedef StringSequence TDParameterList;
+
+
+//#include <SealRunningClearanceAttributes.h>
 
 // Class Definition
 
-class CBrushSealGeometry : public CGeometricAttributes{
-
-public:
-	CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource); //hint
-	CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource,const TCollection_AsciiString& l_strID); //hint
+class CFlowTableSeriesCurveMapper : public CEngineeringObject{
 	
-	virtual ~CBrushSealGeometry ();
-
-	virtual void SetRadius(TCollection_AsciiString& pRadius);
-	void SetGeomAttribID(TCollection_AsciiString& pGeomObjID);
-	virtual void SetGeomID(TCollection_AsciiString& l_strID)
-	{
-	}
-
-	virtual TCollection_AsciiString GetRadius();
-	TCollection_AsciiString GetGeomObjID();
-	TCollection_AsciiString GetObjectID();
-
+public:
+	
+	CFlowTableSeriesCurveMapper(
+		const Ptr(HFWDataSource)& l_pDataSource
+		);////Changed
+	//CFlowTableSeriesCurveMapper(const Ptr( CVNet_1_0DocController)& l_pDocCtrl,
+	//	const TCollection_AsciiString& l_strID,
+	//	Standard_Integer p_bSeriesCurve =0
+	//	);
+	CFlowTableSeriesCurveMapper(const Ptr(HFWDataSource)& l_pDataSrc,
+		const TCollection_AsciiString& l_strID);
+	
+	virtual ~CFlowTableSeriesCurveMapper ();
+	
+public:
+	virtual void SetSeriesCurve(const TCollection_AsciiString& pSeriesCurve);
+	virtual void SetSeriesValue(TCollection_AsciiString& pSeriesValue);
+	void SetTDParameterID( TCollection_AsciiString& pTDParameterID);
+	
+	
+	virtual TCollection_AsciiString GetSeriesCurve();
+	virtual TCollection_AsciiString GetSeriesValue();
+	TDParameterList GetTDParametersList();
+	Ptr(CTableDataParametersList) GetParameter(const TCollection_AsciiString&);
+	
+	void RemoveTDParameterIDRow();
 protected:
-	CBrushSealGeometry()
+	CFlowTableSeriesCurveMapper()
 	{
 	}
-	Ptr(HFWDataRow) m_pBSGeomDataRow;
-		
+	
 private:
 };
-DEFINE_SMART_PTR(CBrushSealGeometry,CGeometricAttributes)
+DEFINE_SMART_PTR(CFlowTableSeriesCurveMapper,CEngineeringObject)
 
 
-////class for legacy model
-//class CBrushSealGeometryLegacy: public CBrushSealGeometry
-//{
-//
-//public:
-//	CBrushSealGeometryLegacy(const Ptr(CVNet_1_0DocController)& l_rpDocCtrl)
-//	{
-//		m_pDataSrc = l_rpDocCtrl->GetDataSource();
-//	}
-//	~CBrushSealGeometryLegacy()
-//	{
-//	}
-//
-//	void SetRadius(TCollection_AsciiString& pRadius)
-//	{
-//		m_strRad = pRadius;
-//	}
-//	void SetLength(TCollection_AsciiString& pLength)
-//	{
-//		m_strLen = pLength;
-//	}
-//	void SetSealTilt(TCollection_AsciiString& pSealTilt)
-//	{
-//		m_strSealTilt = pSealTilt;
-//	}
-//	void SetGeomID(TCollection_AsciiString& l_strID)
-//	{
-//		m_strID = l_strID;
-//	}
-//
-//
-//
-//	TCollection_AsciiString GetRadius()
-//	{
-//		return m_strRad;
-//	}
-//	TCollection_AsciiString GetLength()
-//	{
-//		return m_strLen;
-//	}
-//	TCollection_AsciiString GetSealTilt()
-//	{
-//		return m_strSealTilt;
-//	}
-//
-//	void UpdateXMLDataSrc()
-//	{
-//		if(m_strID.IsEmpty())
-//			return;
-//
-//		//get table
-//		Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("BrushSealGeometry");
-//		//set row object
-//		m_pRSGeomDataRow = l_pDataTab->GetRow(m_strID);
-//		
-//		//update in engg object
-//		CBrushSealGeometry::SetRadius(m_strRad);
-//		CBrushSealGeometry::SetLength(m_strLen);
-//		CBrushSealGeometry::SetSealTilt(m_strSealTilt);
-//	}
-//
-//
-//protected:
-//	TCollection_AsciiString				m_strRad;
-//	TCollection_AsciiString				m_strLen;
-//	TCollection_AsciiString				m_strSealTilt;
-//
-//	TCollection_AsciiString				m_strID;
-//
-//private:
-//
-//};
-//
-//DEFINE_SMART_PTR(CBrushSealGeometryLegacy,CBrushSealGeometry)
 
-#endif //_CBrushSealGeometry_HeaderFile_
+
+//class for legacy model
+DEFINE_SMART_PTR(CFlowTableSerCurMapLegacy,CFlowTableSeriesCurveMapper)
+class CFlowTableSerCurMapLegacy: public CFlowTableSeriesCurveMapper
+{
+public:
+	CFlowTableSerCurMapLegacy(const Ptr(HFWDataSource)& l_pDataSource)
+		: m_pNext(NULL)
+	{
+		m_pDataSrc = l_pDataSource;
+	}
+	~CFlowTableSerCurMapLegacy()
+	{
+	}
+
+	void SetSeriesCurve(const TCollection_AsciiString& pSeriesCurve)
+	{
+		m_strSerCur = pSeriesCurve;
+	}
+	void SetSeriesValue(TCollection_AsciiString& pSeriesValue)
+	{
+		m_strSerVal = pSeriesValue;
+	}
+
+	TCollection_AsciiString GetSeriesCurve()
+	{
+		return m_strSerCur;
+	}
+	TCollection_AsciiString GetSeriesValue()
+	{
+		return m_strSerVal;
+	}
+
+	void AddFirstPara(Ptr(CFlowTableDataParaLegacy) l_pPara)
+	{
+		m_pFirstPara = l_pPara;
+	}
+	Ptr(CFlowTableDataParaLegacy) GetFirstPara()
+	{
+		return m_pFirstPara;
+	}
+	void AddNext(Ptr(CFlowTableSerCurMapLegacy) l_pNext)
+	{
+		m_pNext = l_pNext;
+	}
+	void SetMapID(TCollection_AsciiString& l_strID)
+	{
+		m_strID = l_strID;
+	}
+
+	Ptr(CFlowTableSerCurMapLegacy) GetNext()
+	{
+		return m_pNext;
+	}
+	Standard_Boolean IsNext()
+	{
+		return !(m_pNext.IsNull());
+	}
+
+
+	void UpdateXMLDataSrc()
+	{
+		if(m_strID.IsEmpty())
+			return;
+
+		//get table
+		Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
+		//set row object
+		m_pDataRow = l_pDataTab->GetRow(m_strID);
+		//update in engg object
+		//CFlowTableSeriesCurveMapper::SetSeriesCurve(m_strSerCur);
+		CFlowTableSeriesCurveMapper::SetSeriesValue(m_strSerVal);
+
+		//update all the parameters in a list
+		Ptr(CFlowTableDataParaLegacy) l_pPara = m_pFirstPara;
+		TDParameterList l_list = CFlowTableSeriesCurveMapper::GetTDParametersList();
+		TDParameterList::Iterator l_iter(l_list);
+		for(; l_iter.More(); l_iter.Next())
+		{
+			if(!l_pPara.IsNull())
+			{
+				TCollection_AsciiString l_strID = l_iter.Value();
+				l_pPara->SetID(l_strID);
+				l_pPara->UpdateXMLDataSrc();
+			}
+			else
+				break;
+			l_pPara = l_pPara->GetNext();
+		}
+	}
+
+protected:
+	TCollection_AsciiString							m_strSerCur;
+	TCollection_AsciiString							m_strSerVal;
+	Ptr(CFlowTableDataParaLegacy)					m_pFirstPara;
+	//keep next running clearance op map object
+    Ptr(CFlowTableSerCurMapLegacy)					m_pNext;
+
+	TCollection_AsciiString							m_strID;
+private:
+
+};
+
+#endif //_CSeriesCurveMapper _HeaderFile_
+
+
 
 
 
@@ -179,15 +229,15 @@ DEFINE_SMART_PTR(CBrushSealGeometry,CGeometricAttributes)
 //                                                                            //
 //----------------------------------------------------------------------------//
 //
-//    MODULE NAME       :   RingSealGeometry.h
+//    MODULE NAME       :  FlowTable SeriesCurveMapper.cpp
 //
-//    DESCRIPTIVE NAME  :   CRingSealGeometry Class Definition
+//    DESCRIPTIVE NAME  :   CFlowTableSeriesCurveMapper Class Definition
 //
-//    MODULE FUNCTION   :   Source file for RingSealGeometry EngineeringObject
+//    MODULE FUNCTION   :   Source file for  FlowTable SeriesCurveMapper EngineeringObject
 //
-//    MODULE AUTHOR     :   Vijay Varanasi
+//    MODULE AUTHOR     :   Gaurav Banda
 //
-//    DATE MODULE WRITTEN:  23/08/2006 02:25:00 PM
+//    DATE MODULE WRITTEN:  14/11/2007 06:06:00 PM
 //
 //----------------------------------------------------------------------------
 //
@@ -201,140 +251,278 @@ DEFINE_SMART_PTR(CBrushSealGeometry,CGeometricAttributes)
  *                                                                            * 
  ******************************************************************************/
 #include "stdafx.h"
-#ifndef	_CBrushSealGeometry_HeaderFile_
-#include <BrushSealGeometry.h>
-#endif //_CBrushSealGeometry_HeaderFile_
+#ifndef	_CSeriesCurveMapper_HeaderFile_
+#include <SeriesCurveMapper.h>
+#endif //_CSealRunningClearanceOPMapper_HeaderFile_
+
+#ifndef __CTableDataParametersList_HeaderFile_
+#include <TableDataParametersList.h>
+#endif //__CTableDataParametersList_HeaderFile_
 
 //////////////////////////////// PUBLIC ///////////////////////////////////////  
 //================================ LIFECYCLE ================================== 
 //======================= Construction and Destruction ======================== 
+
 /*******************************************************************************/
 //   Function Name  :   Constructor with parameters
 //   Parameters     :   const Ptr(CVNet_1_0DocController)& -->DocController Obj
 //   Description    :   
 //   Modify History :
-//      1.              Date    ->  23/08/2006 
-//                      Author  ->  Vijay Varanasi
+//      1.              Date    ->  15/09/2007
+//                      Author  ->  Gaurav Banda
 //                      Purpose ->  Created
 /*******************************************************************************/
-CBrushSealGeometry::CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource)
-				  :CGeometricAttributes(l_pDataSource)  //hint
-{
-	Raise_If_NULL_SMART_PTR( l_pDataSource,"CBrushSealGeometry::CBrushSealGeometry"); //hint
-
-	Ptr(HFWDataTable) l_pDataTab = l_pDataSource->GetTable("BrushSealGeometry"); //hint
-	m_pBSGeomDataRow = l_pDataTab->AddNewRow();
-
-	//Setting the Geometric Attributes ID
-	SetGeomAttribID(CGeometricAttributes::GetObjectID());
-}
+//CFlowTableSeriesCurveMapper::CFlowTableSeriesCurveMapper (const Ptr(CVNet_1_0DocController)& l_pDocCtrl)							   
+//{
+//	m_pDataSrc = l_pDocCtrl->GetDataSource();
+//	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
+//	m_pDataRow  = l_pDataTab->AddNewRow();
+//
+//	//crate all 10 FlowTableTableDataParameters rows and add them in list
+//	for(Standard_Integer l_nCnt = 1; l_nCnt <= 10; l_nCnt++)
+//	{
+//		Ptr(CTableDataParametersList) l_pPara = new CTableDataParametersList(l_pDocCtrl->GetDataSource());
+//		SetTDParameterID(l_pPara->GetObjectID());
+//	}
+//}
 /*******************************************************************************/
 //   Function Name  :   Constructor with Parameters
 //   Parameters     :   const Ptr(CVNet_1_0DocController)& -> Doc Controller Object
 //						const TCollection_AsciiString& - Row ID 
-//   Description    :   
+//						Standard_Integer l_nFlagOPID 
+//   Description    :   l_nFlagSeriesCurve = 1 => Creation of the New Object and the l_strID is
+//						the SeriesCurve
+//						l_nFlagSeriesCurve = 0 => Retrieving the data from the existing Object ID
+//						so, in this case l_strID is the class Object ID
 //   Modify History :
-//      1.              Date    ->  23/08/2006 
-//                      Author  ->  Vijay Varanasi
+//      1.              Date    ->  15/11/2007
+//                      Author  ->  Gaurav Banda
 //                      Purpose ->  Created
 /*******************************************************************************/
-CBrushSealGeometry::CBrushSealGeometry (const Ptr(HFWDataSource)& l_pDataSource,
-									  const TCollection_AsciiString& l_strID)
-									  :CGeometricAttributes() //hint
-{
-	Raise_If_NULL_SMART_PTR( l_pDataSource,"CBrushSealGeometry::CBrushSealGeometry"); //hint
-	m_pDataSrc = l_pDataSource->GetDataSource(); //hint
-	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("BrushSealGeometry");
-	m_pBSGeomDataRow = l_pDataTab->GetRow(l_strID);
+//CFlowTableSeriesCurveMapper::CFlowTableSeriesCurveMapper(const Ptr(CVNet_1_0DocController)& l_pDocCtrl,
+//																const TCollection_AsciiString& l_strID,
+//																Standard_Integer l_nFlagSeriesCurve )							    
+//{
+//	m_pDataSrc = l_pDocCtrl->GetDataSource();
+//	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
+//
+//	if( l_nFlagSeriesCurve ==1)
+//	{
+//		m_pDataRow = l_pDataTab->AddNewRow();
+//	}
+//	else
+//	{
+//		m_pDataRow  = l_pDataTab->GetRow(l_strID);
+//	}
+//}
 
-	//Geometric Attribute Row
-	Ptr(HFWDataTable) l_pGeomDataTab = m_pDataSrc->GetTable("GeometricAttributes");
-	m_pDataRow = l_pGeomDataTab->GetRow(m_pBSGeomDataRow->GetColumn("GeometricAttributesObjID")->GetData());
+/*******************************************************************************/
+//   Function Name  :   Constructor with Parameters
+//   Parameters     :   
+//   Description    :   
+//   Modify History :
+//      1.              Date    ->  22 Nov, 2007
+//                      Author  ->  Ashish Negi
+//                      Purpose ->  Created
+/*******************************************************************************/
+CFlowTableSeriesCurveMapper::CFlowTableSeriesCurveMapper
+(const Ptr(HFWDataSource)& l_pDataSrc,const TCollection_AsciiString& l_strID)							    
+{
+	m_pDataSrc = l_pDataSrc;
+	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
+
+	m_pDataRow  = l_pDataTab->GetRow(l_strID);
 }
+
 
 /*******************************************************************************/
 //   Function Name  :   Destructor
 //   Parameters     :   
 //   Description    :   
-//   Modify History :-
-//      1.              Date    ->  23/08/2006 
-//                      Author  ->  Vijay Varanasi
+//   Modify History :
+//      1.              Date    ->  15/11/2007
+//                      Author  ->  Gaurav Banda
 //                      Purpose ->  Created
 /*******************************************************************************/
-CBrushSealGeometry::~CBrushSealGeometry ()
+
+CFlowTableSeriesCurveMapper::~CFlowTableSeriesCurveMapper ()
 {
 }
-
 /*******************************************************************************/
-//   Function Name  :   SetRadius
+//   Function Name  :   SetSeriesCurve
 //   Parameters     :   TCollection_AsciiString&
-//   Description    :   Sets the Radius
+//   Description    :   Sets the seriesCurve
 //   Modify History :
-//      1.              Date    ->  23/08/2006 
-//                      Author  ->  Vijay Varanasi
-//                      Purpose ->  Created
-/*******************************************************************************/
-void CBrushSealGeometry::SetRadius(TCollection_AsciiString& pRadius)
-{
-	m_pBSGeomDataRow->GetColumn("Radius")->SetData(pRadius);
-}
-
-/*******************************************************************************/
-//   Function Name  :   GetRadius
-//   Parameters     :   
-//	 Return			:	TCollection_AsciiString
-//   Description    :   Returns the Radius
-//   Modify History :
-//      1.              Date    ->  23/08/2006 
-//                      Author  ->  Vijay Varanasi
+//      1.              Date    ->  15/11/2007
+//                      Author  ->  Gaurav Banda
 //                      Purpose ->  Created
 /*******************************************************************************/
 
-TCollection_AsciiString CBrushSealGeometry::GetRadius()
+void CFlowTableSeriesCurveMapper::SetSeriesCurve(const TCollection_AsciiString& pSeriesCurve)
 {
-	return m_pBSGeomDataRow->GetColumn("Radius")->GetData();
+	m_pDataRow->GetColumn("SeriesCurve")->SetData(pSeriesCurve);
 }
 /*******************************************************************************/
-//   Function Name  :   GetGeomObjID
-//   Parameters     :   
-//	 Return			:	TCollection_AsciiString
-//   Description    :   Returns the Geometry Attributes Object ID
-//   Modify History :
-//      1.              Date    ->  20/09/2006 
-//                      Author  ->  Vijay Varanasi
-//                      Purpose ->  Created
-/*******************************************************************************/
-
-TCollection_AsciiString  CBrushSealGeometry::GetGeomObjID()
-{
-	return m_pBSGeomDataRow->GetColumn("GeometricAttributesObjID")->GetData();
-}
-
-/*******************************************************************************/
-//   Function Name  :   SetGeomAttribID
+//   Function Name  :   SetSeriesValue
 //   Parameters     :   TCollection_AsciiString&
-//	 Return			:	
-//   Description    :   Sets the Geometric Attributes Object ID
+//   Description    :   Sets the series Value
 //   Modify History :
-//      1.              Date    ->  20/09/2006 
-//                      Author  ->  Vijay Varanasi
+//      1.              Date    ->  15/11/2007 
+//                      Author  ->  Gaurav Banda
 //                      Purpose ->  Created
 /*******************************************************************************/
-void  CBrushSealGeometry::SetGeomAttribID(TCollection_AsciiString& pGeomObjID)
+
+void CFlowTableSeriesCurveMapper::SetSeriesValue(TCollection_AsciiString& pSeriesValue)
 {
-	m_pBSGeomDataRow->GetColumn("GeometricAttributesObjID")->SetData(pGeomObjID);
+	m_pDataRow->GetColumn("SeriesValue")->SetData(pSeriesValue);
 }
 /*******************************************************************************/
-//   Function Name  :   GetObjectID
+//   Function Name  :   GetSeriesCurve
 //   Parameters     :   
-//	 Return			:	TCollection_AsciiString 
-//   Description    :   Return the Object ID
+//   Return			:	TCollection_AsciiString
+//   Description    :   Returns the SeriesCurve
 //   Modify History :
-//      1.              Date    ->  28/09/2006 
-//                      Author  ->  Vijay Varanasi
+//      1.              Date    ->  15/11/2007
+//                      Author  ->  Gaurav Banda
 //                      Purpose ->  Created
 /*******************************************************************************/
-TCollection_AsciiString CBrushSealGeometry::GetObjectID()
+
+TCollection_AsciiString CFlowTableSeriesCurveMapper::GetSeriesCurve()
 {
-	return m_pBSGeomDataRow->GetRowID();
+	return m_pDataRow->GetColumn("SeriesCurve")->GetData();
+}
+/*******************************************************************************/
+//   Function Name  :   GetSeriesValue
+//   Parameters     :   
+//   Return			:	TCollection_AsciiString
+//   Description    :   Returns SeriesValue
+//   Modify History :
+//      1.              Date    ->  15/11/2007
+//                      Author  ->  Gaurav Banda
+//                      Purpose ->  Created
+/*******************************************************************************/
+
+TCollection_AsciiString CFlowTableSeriesCurveMapper::GetSeriesValue()
+{
+	return m_pDataRow->GetColumn("SeriesValue")->GetData();
+}
+
+/*******************************************************************************/
+//   Function Name  :   GetTDParametersList
+//   Parameters     :   
+//	 Return			:   TDParameterList - StringList
+//   Description    :   Returns TableData Parameters ID List
+//   Modify History :
+//      1.              Date    ->  15/11/2007
+//                      Author  ->  Gaurav Banda
+//                      Purpose ->  Created
+/*******************************************************************************/
+
+TDParameterList CFlowTableSeriesCurveMapper::GetTDParametersList()
+{
+	TDParameterList l_ListTDParameters;
+	Ptr(HFWDataSubTable) l_pDataSubTab = 
+			m_pDataRow->GetColumn("TableDataParameterList")->GetSubTable();
+
+	Standard_Integer     l_nRows       = l_pDataSubTab->GetNoRows();
+	for(Standard_Integer i=0; i<l_nRows; i++){
+		try {
+			Ptr( HFWDataRow) l_pDataRow = l_pDataSubTab->GetRow(i);
+			Ptr( HFWDataColumn) l_pDataSubCol 
+					= l_pDataRow->GetColumn(TCollection_AsciiString("TableDataParametersListID"));
+			l_ListTDParameters.Append(l_pDataSubCol->GetData());
+		}catch(HFWException* pEx){
+			pEx->PrintStack();
+		}		
+	}
+	return l_ListTDParameters;
+}
+/*******************************************************************************/
+//   Function Name  :   SetTDParameterID
+//   Parameters     :   TCollection_AsciiString -> ParameterID
+//						Attrib Object ID (CTableDataParameters ID)s 
+//	 Return			:   
+//   Description    :   Returns TableData Parameter Attributes ID List
+//   Modify History :
+//      1.              Date    ->  15/11/2007
+//                      Author  ->  Gaurav Banda
+//                      Purpose ->  Created
+/*******************************************************************************/
+void CFlowTableSeriesCurveMapper::SetTDParameterID( TCollection_AsciiString& pTDParameterID)
+{
+	Ptr( HFWDataSubTable) l_pDataSubTab = 
+		m_pDataRow->GetColumn( "TableDataParameterList")->GetSubTable();
+	Ptr( HFWDataRow) l_pDataRow = l_pDataSubTab->AddNewRow();
+
+	l_pDataRow->GetColumn(TCollection_AsciiString("TableDataParametersListID"))->SetData( pTDParameterID);
+}
+/*******************************************************************************/
+//   Function Name  :   Remove1DSurfaceTempIDRow
+//   Parameters     :   __(N.A)
+//						
+//	 Return			:   
+//   Description    :   Removes One Row of the 1D Surface Temperature ID Row From the Database
+//   Modify History :
+//      1.              Date    ->  15/11/2007 
+//                      Author  ->  Gaurav Banda
+//                      Purpose ->  Created
+/*******************************************************************************/
+void CFlowTableSeriesCurveMapper::RemoveTDParameterIDRow()
+{
+	try
+	{
+		// Getting the Sub Table for the DiskCav1DSurfTempAttribList
+		Ptr(HFWDataSubTable) l_pDataSubTab = 
+				m_pDataRow->GetColumn("TableDataParameterList")->GetSubTable();
+		
+		// Getting the Number of Rows
+		Standard_Integer l_nRows = l_pDataSubTab->GetNoRows();
+															
+		// Getting the Row for the First																												
+		Ptr( HFWDataRow) l_pDataRow = l_pDataSubTab->GetRow(1);
+		// Getting the subcolumn 
+		Ptr( HFWDataColumn) l_pDataSubCol 
+						= l_pDataRow->GetColumn(TCollection_AsciiString("TableDataParametersListID"));
+		// Getting the Data for the sub Column -> First Data ID
+		TCollection_AsciiString l_strTDParameterID = l_pDataSubCol->GetData();
+
+		/*
+		 * Removing 1D Disk Cavity Geometry ID row corresponding to this data row was deleted 
+		 * externally before while saving the data into the 1D Disk Cavity Geometry
+		 */
+
+		// Removing 1D Surface Temperature Attribute Row  for the First ID 
+		Ptr( HFWDataTable) l_pTDParameterTab = m_pDataSrc->GetTable( "FlowTableTableDataParameters");
+		l_pTDParameterTab ->RemoveRow( l_strTDParameterID );
+
+		// Removing the 1D Surface Temperature Data ID from the sequence
+		l_pDataSubTab->RemoveRow(1); // Removing the First Row
+																														
+	}
+	catch( HFWException* pEx)
+	{
+		TCollection_AsciiString l_strErrMsg;
+		Copy( l_strErrMsg, pEx->GetErrorMessage());
+		VNetLogger::Log( VN_LOG_ERROR, "CFlowTableSeriesCurveMapper::RemoveTDParameterIDRow",
+							l_strErrMsg, __LINE__);
+	}				
+	
+}
+
+
+/*******************************************************************************/
+//   Function Name  :   GetParameter
+//   Parameters     :   TCollection_AsciiString
+//						
+//	 Return			:   
+//   Description    :   ge tparameter object for a given ID
+//   Modify History :
+//      1.              Date    ->  27 Nov, 2007
+//                      Author  ->  Ashish Negi
+//                      Purpose ->  Created
+/*******************************************************************************/
+Ptr(CTableDataParametersList) CFlowTableSeriesCurveMapper::GetParameter
+(const TCollection_AsciiString& l_strID)
+{
+	return new CTableDataParametersList(m_pDataSrc,l_strID);
 }
