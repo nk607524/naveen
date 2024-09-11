@@ -1,528 +1,761 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//   This material contains, and is a part of a computer software program     //
-//   which is, proprietary and confidential information owned by:             //
-//                  Honeywell Technologies Solution Lab, INC.                 //
-//   The program, including this material, may not be duplicated, disclosed   //
-//   or reproduced in whole or in part for any purpose without the express    //
-//   written authorization of Honeywell.  All authorized                      //
-//   reproductions must be marked with this legend.                           //
-//                                                                            //
-//              © 2006 Honeywell Technologies Solution Lab, Inc.              //
-//              Honeywell Technologies Solution Lab, Incorporated             //
-//                            All rights reserved.                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-//
-//    MODULE NAME       :   FlowTableSeriesCurveMapper.h
-//
-//    DESCRIPTIVE NAME  :   CFlowTableSeriesCurveMapper Class Definition
-//
-//    MODULE FUNCTION   :   Header File for FlowTableSeriesCurveMapper Engineering object
-//
-//    MODULE AUTHOR     :   Gaurav Banda
-//
-//    DATE MODULE WRITTEN:  14th Nov 2007
-//
-//----------------------------------------------------------------------------
-//
-//
-// History:
-// 
-//
-
 #pragma once
-
-#ifndef	_CSeriesCurveMapper_HeaderFile_
-#define _CseriesCurveMapper_HeaderFile_
 
 #ifndef _TCollection_AsciiString_HeaderFile
 #include <TCollection_AsciiString.hxx> 
 #endif //_TCollection_AsciiString_HeaderFile
 
-#ifndef NCollection_DefineList_HeaderFile
-#include <NCollection_DefineList.hxx>
-#endif //NCollection_DefineList_HeaderFile
+#include <ProjectDataModel.h>
 
-#ifndef __CEngineeringObject_HeaderFile__
-#include <EngineeringObject.h>
-#endif //__CEngineeringObject_HeaderFile__
+#include "FREModelFactory.h"
 
-#ifndef __VNet_1_0DocController_HeaderFile__
-#include <VNet_1_0DocController.h>
-#endif //__VNet_1_0DocController_HeaderFile__
-
-#ifndef __CTableDataParametersList_HeaderFile_
-#include <TableDataParametersList.h>
-#endif //__CTableDataParametersList_HeaderFile_
-
-#include "Util.h"
-
-typedef StringSequence TDParameterList;
-
-
-//#include <SealRunningClearanceAttributes.h>
-
-// Class Definition
-
-class CFlowTableSeriesCurveMapper : public CEngineeringObject{
-	
-public:
-	
-	CFlowTableSeriesCurveMapper(
-		const Ptr(HFWDataSource)& l_pDataSource
-		);////Changed
-	//CFlowTableSeriesCurveMapper(const Ptr( CVNet_1_0DocController)& l_pDocCtrl,
-	//	const TCollection_AsciiString& l_strID,
-	//	Standard_Integer p_bSeriesCurve =0
-	//	);
-	CFlowTableSeriesCurveMapper(const Ptr(HFWDataSource)& ,
-		const TCollection_AsciiString& l_strID);
-	
-	virtual ~CFlowTableSeriesCurveMapper ();
-	
-public:
-	virtual void SetSeriesCurve(const TCollection_AsciiString& pSeriesCurve);
-	virtual void SetSeriesValue(TCollection_AsciiString& pSeriesValue);
-	void SetTDParameterID( TCollection_AsciiString& pTDParameterID);
-	
-	
-	virtual TCollection_AsciiString GetSeriesCurve();
-	virtual TCollection_AsciiString GetSeriesValue();
-	TDParameterList GetTDParametersList();
-	Ptr(CTableDataParametersList) GetParameter(const TCollection_AsciiString&);
-	
-	void RemoveTDParameterIDRow();
-protected:
-	CFlowTableSeriesCurveMapper()
-	{
-	}
-	
-private:
-};
-DEFINE_SMART_PTR(CFlowTableSeriesCurveMapper,CEngineeringObject)
-
-
-
-
-//class for legacy model
-DEFINE_SMART_PTR(CFlowTableSerCurMapLegacy,CFlowTableSeriesCurveMapper)
-class CFlowTableSerCurMapLegacy: public CFlowTableSeriesCurveMapper
+class VNET_1_0_EXPORT ModelMergeController
 {
 public:
-	CFlowTableSerCurMapLegacy(const Ptr(HFWDataSource)& l_pDataSource)
-		: m_pNext(NULL)
-	{
-		m_pDataSrc = l_pDataSource;
-	}
-	~CFlowTableSerCurMapLegacy()
-	{
-	}
+	ModelMergeController(TCollection_AsciiString p_strProjectPath);
+	~ModelMergeController();
 
-	void SetSeriesCurve(const TCollection_AsciiString& pSeriesCurve)
-	{
-		m_strSerCur = pSeriesCurve;
-	}
-	void SetSeriesValue(TCollection_AsciiString& pSeriesValue)
-	{
-		m_strSerVal = pSeriesValue;
-	}
+	TCollection_AsciiString GetErrorMessages();
+protected:
+	Standard_Boolean OpenChildProject();
+	void LoadCurrentProject();
 
-	TCollection_AsciiString GetSeriesCurve()
-	{
-		return m_strSerCur;
-	}
-	TCollection_AsciiString GetSeriesValue()
-	{
-		return m_strSerVal;
-	}
+	Standard_Boolean isModelMergeFeasible();
 
-	void AddFirstPara(Ptr(CFlowTableDataParaLegacy) l_pPara)
-	{
-		m_pFirstPara = l_pPara;
-	}
-	Ptr(CFlowTableDataParaLegacy) GetFirstPara()
-	{
-		return m_pFirstPara;
-	}
-	void AddNext(Ptr(CFlowTableSerCurMapLegacy) l_pNext)
-	{
-		m_pNext = l_pNext;
-	}
-	void SetMapID(TCollection_AsciiString& l_strID)
-	{
-		m_strID = l_strID;
-	}
+	void CopyBoundaryConditons();
+	void CopySecondaryNodes();
+	void CopyFREs();
 
-	Ptr(CFlowTableSerCurMapLegacy) GetNext()
-	{
-		return m_pNext;
-	}
-	Standard_Boolean IsNext()
-	{
-		return !(m_pNext.IsNull());
-	}
+	TCollection_AsciiString GetDataIDOfFREStartOrEndNode(Standard_Integer p_iNodeNumber, en_EntityType p_enEntityType);
+
+	void CopyBrushSealFREProperties(Ptr(BrushSealFREModel) p_pChildProjBrushSealFREModel, Ptr(BrushSealFREModel) p_pMainProjBrushSealFREModel);
+	void CopyDiskCavityPumpingFREProperties(Ptr(DiskCavityPumpingFREModel) p_pChildProjDiskCavityFREModel, Ptr(DiskCavityPumpingFREModel) p_pMainProjDiskCavityFREModel);
+	void CopyDynamicHeadLossFREProperties(Ptr(DynamicHeadLossFREModel) p_pChildProjDHLFREModel, Ptr(DynamicHeadLossFREModel) p_pMainProjDHLModel);
+	void CopyEntranceFREModelProperties(Ptr(EntranceFREModel) p_pChildProjEntrFREModel, Ptr(EntranceFREModel) p_pMainProjEntrFREModel);
+	void CopyLabyrinthFREModelProperties(Ptr(LabyrinthSealFREModel) p_pChildProjLabSealFREModel, Ptr(LabyrinthSealFREModel) p_pMainProjLabSealFREModel);
+	void CopyOrificeFREProperties(Ptr(OrificeFREModel) p_pChildProjOrificeFREModel, Ptr(OrificeFREModel) p_pMainProjOrificeModel);
+	void CopyRecirculationFREProperites(Ptr(ReCirculationFREModel) p_pChildProjRecirFREModel, Ptr(ReCirculationFREModel) p_pMainProjRecirFREModel);
+	void CopyRotatingOrificeFREProperties(Ptr(RotatingOrificeFREModel) p_pChildProjRotatingFREModel, Ptr(RotatingOrificeFREModel) p_pMainProjRotatingOrificeModel);
+	void CopyStaticSealFREProperties(Ptr(StaticSealFREModel) p_pChildProjStaticSealFREModel, Ptr(StaticSealFREModel) p_pMainProjStaticSealFREModel);
+	void CopyTubeFREProperties(Ptr(TubeFREModel) p_pChildProjTubeFREModel, Ptr(TubeFREModel) p_pMainProjTubeFREModel);
+
+	//Any Expected Errors Faced during Model Merge will be stored in this variable;
+	TCollection_AsciiString				m_strErrorMessages;
+
+	Ptr(HFWDataSource)					m_pMainPrjDS;
+	Ptr(CVNet_1_0DocController)	        m_pMainDocCtrl;
+	Ptr(CModelData)						m_pMainSMModel;
+	Ptr(ProjectDataModel)				m_pMainProjectDataModel;
+	Ptr(VNetDataMap)					m_pMainProjOPs;
+
+	Ptr(HFWDataSource)					m_pChildPrjDS;
+	Ptr(CProject)						m_pChildProject;
+	Ptr(ProjectDataModel)				m_pChildProjectDataModel;
+	Ptr(CVNet_1_0DocController)	        m_pChildDocCtrl;
+	CApplicationTreeData*				m_pChildProjApplicationTreeData;
+	CApplicationTreeStructure*			m_pChildProjAppTreeStructure;
+	Ptr(VNetDataMap)					m_pChildProjOPs;
+	
+
+	TCollection_AsciiString				m_strChildProjectPath;
+	TCollection_AsciiString				m_strChildProjectName;
+
+	MapOfStringString					m_mapChildProjNodeNumParentProjNodeNum;
+};
 
 
-	void UpdateXMLDataSrc()
+#include "stdafx.h"
+#include "ModelMergeController.h"
+
+#ifndef __VNet_1_0AppController_HeaderFile__
+#include <VNet_1_0AppController.h>
+#endif //__VNet_1_0AppController_HeaderFile__
+
+#include <SecondaryNodeModel.h>
+#include "BoundaryConditionModel.h"
+
+
+#ifndef __OperatingPointData_HeaderFile__
+#include <OperatingPointData.h>
+#endif //__OperatingPointData_HeaderFile__
+
+ModelMergeController::ModelMergeController(TCollection_AsciiString p_strProjectPath)
+{
+	ReplaceStr(p_strProjectPath, "\\", "/");
+	ReplaceStr(p_strProjectPath, "//", "/");
+
+	TCollection_AsciiString l_strFullPath = p_strProjectPath;
+	Standard_Integer l_iIndex = l_strFullPath.SearchFromEnd("/");
+	m_strChildProjectName = l_strFullPath.Split(l_iIndex);
+	m_strChildProjectPath = l_strFullPath;
+	OpenChildProject();
+	LoadCurrentProject();
+	if (isModelMergeFeasible())
 	{
-		if(m_strID.IsEmpty())
-			return;
+		CopyBoundaryConditons();
+		CopySecondaryNodes();
+		CopyFREs();
+	}	
+}
 
-		//get table
-		Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
-		//set row object
-		m_pDataRow = l_pDataTab->GetRow(m_strID);
-		//update in engg object
-		//CFlowTableSeriesCurveMapper::SetSeriesCurve(m_strSerCur);
-		CFlowTableSeriesCurveMapper::SetSeriesValue(m_strSerVal);
+ModelMergeController::~ModelMergeController()
+{
+}
 
-		//update all the parameters in a list
-		Ptr(CFlowTableDataParaLegacy) l_pPara = m_pFirstPara;
-		TDParameterList l_list = CFlowTableSeriesCurveMapper::GetTDParametersList();
-		TDParameterList::Iterator l_iter(l_list);
-		for(; l_iter.More(); l_iter.Next())
+void ModelMergeController::CopyBoundaryConditons()
+{
+	BoundaryConditionModelSeq l_SeqNABCs = BoundaryConditionModel::getAllBoundaryConditions(m_pChildDocCtrl->GetDataSource());
+	BoundaryConditionModelSeq::Iterator l_iterNABC(l_SeqNABCs);
+	for (; l_iterNABC.More(); l_iterNABC.Next())
+	{
+		TCollection_AsciiString l_newNodeNumber;
+		BoundaryConditionModel& l_ChildProjBCNodeModel = l_iterNABC.ChangeValue();
+		m_pMainSMModel->CreateNode(l_ChildProjBCNodeModel.GetRadius().RealValue(), 0, l_ChildProjBCNodeModel.GetZCoord().RealValue(), VN_NT_BCNODE, l_newNodeNumber);
+		m_mapChildProjNodeNumParentProjNodeNum.Bind(l_iterNABC.ChangeValue().GetNodeNumber(), l_newNodeNumber);
+
+		//Copy BC Properties
+		Ptr(BoundaryConditionModel) l_pMainProjBCNodeModel = BoundaryConditionModel::getBoundaryConditionModel(l_newNodeNumber.IntegerValue(), m_pMainDocCtrl->GetDataSource());
+		l_pMainProjBCNodeModel->SetLegacyNodeNumber(l_ChildProjBCNodeModel.GetLegacyNodeNumber());
+		l_pMainProjBCNodeModel->SetCustomSubSysNumber(l_ChildProjBCNodeModel.GetCustomSubSystemNumber());
+		
+		l_pMainProjBCNodeModel->SetLocation(l_ChildProjBCNodeModel.GetLocation());
+		l_pMainProjBCNodeModel->SetNABCMappedStation(l_ChildProjBCNodeModel.GetNABCMappedStation());
+		l_pMainProjBCNodeModel->SetABCEntryInfo(l_ChildProjBCNodeModel.GetABCEntryInfo());
+		l_pMainProjBCNodeModel->SetABCHubInfo(l_ChildProjBCNodeModel.GetABCHubInfo());
+
+		l_pMainProjBCNodeModel->SetScalingType(l_ChildProjBCNodeModel.GetScalingType());
+		l_pMainProjBCNodeModel->SetStaticPressureScalingFunction(l_ChildProjBCNodeModel.GetStaticPressureScalingFunction());
+		l_pMainProjBCNodeModel->SetTotalTempScalingFunction(l_ChildProjBCNodeModel.GetTotalTempScalingFunction());
+
+		//OP based properties
+		MapOfString l_mapOPNames = m_pChildProjOPs->GetKeys();
+		MapOfString::Iterator l_iterOPName(l_mapOPNames);
+		for (; l_iterOPName.More(); l_iterOPName.Next())
 		{
-			if(!l_pPara.IsNull())
+			//BC Attributes Ex
+			l_pMainProjBCNodeModel->SetPercentCorrectionPsForOP(l_iterOPName.Value(), l_ChildProjBCNodeModel.GetPercentCorrectionPsForOP(l_iterOPName.Value()));
+			l_pMainProjBCNodeModel->SetPercentCorrectionPtForOP(l_iterOPName.Value(), l_ChildProjBCNodeModel.GetPercentCorrectionPtForOP(l_iterOPName.Value()));
+			l_pMainProjBCNodeModel->SetPercentCorrectionTtForOP(l_iterOPName.Value(), l_ChildProjBCNodeModel.GetPercentCorrectionTtForOP(l_iterOPName.Value()));
+
+			//BC Attributes
+			l_pMainProjBCNodeModel->SetStoredDeltaPForOP(l_iterOPName.Value(), l_ChildProjBCNodeModel.GetDeltaPForOP(l_iterOPName.Value()));
+			l_pMainProjBCNodeModel->SetStoredStaticPressureForOP(l_iterOPName.Value(), l_ChildProjBCNodeModel.GetStoredStaticPressureForOP(l_iterOPName.Value()));
+			l_pMainProjBCNodeModel->SetStoredTotalPressureForOP(l_iterOPName.Value(), l_ChildProjBCNodeModel.GetStoredTotalPressureForOP(l_iterOPName.Value()));
+			l_pMainProjBCNodeModel->SetStoredTotalTemperatureForOP(l_iterOPName.Value(), l_ChildProjBCNodeModel.GetStoredTotatTemperatureForOP(l_iterOPName.Value()));
+		}
+		
+		//Scaling Group Based properties
+		
+
+		l_pMainProjBCNodeModel->UpdateInEnggObjects();
+	}
+}
+
+void ModelMergeController::CopySecondaryNodes()
+{
+	SecondaryNodeModelSeq l_SeqSecNodes = SecondaryNodeModel::getAllSecondaryNodes(m_pChildDocCtrl->GetDataSource());
+	SecondaryNodeModelSeq::Iterator l_iterSecNodes(l_SeqSecNodes);
+	for (; l_iterSecNodes.More(); l_iterSecNodes.Next())
+	{
+		TCollection_AsciiString l_newNodeNumber;
+		SecondaryNodeModel& l_OldSecNode = l_iterSecNodes.ChangeValue();
+		m_pMainSMModel->CreateNode(l_OldSecNode.GetRadius().RealValue(), 0, l_OldSecNode.GetZCoord().RealValue(), VN_NT_SECNODE, l_newNodeNumber);
+		m_mapChildProjNodeNumParentProjNodeNum.Bind(l_iterSecNodes.ChangeValue().GetNodeNumber(), l_newNodeNumber);
+
+		//Copy Secondary Node Properties
+		Ptr(SecondaryNodeModel) l_pNewSecNode = SecondaryNodeModel::getSecondaryNodeModel(l_newNodeNumber.IntegerValue(), m_pMainDocCtrl->GetDataSource());
+		l_pNewSecNode->SetDescription(l_OldSecNode.GetDescription());
+		l_pNewSecNode->SetLegacyNodeNumber(l_OldSecNode.GetLegacyNodeNumber());
+		l_pNewSecNode->SetCustomSubSystem(l_OldSecNode.GetCustomSubSystem());
+
+		l_pNewSecNode->UpdateInEnggObjects();
+	}
+}
+
+void ModelMergeController::CopyFREs()
+{
+	FREModelSeq l_seqFREModels = FREModelFactory::getAllActiveFREsinModel(m_pChildProjectDataModel->GetStatusModelAppTreeData().GetValuePath(), m_pChildProjectDataModel, m_pChildDocCtrl);
+	FREModelSeq::Iterator l_iterChildFREModel(l_seqFREModels);
+	for (; l_iterChildFREModel.More(); l_iterChildFREModel.Next())
+	{
+		Ptr(FREModel) l_pChildProjFREModel = l_iterChildFREModel.ChangeValue();
+
+		//Get Viz Object Details from child Project
+		Ptr(VNetVizObject) l_FREVizObj = FREModel::LoadFREVizObject(l_pChildProjFREModel, m_pChildProjectDataModel, m_pChildDocCtrl);
+		SeqOfVNetVizObject& l_seqFRENodes =  l_FREVizObj->GetListOfFRENodes();
+
+		//To create FRE, viz object needs to be created first
+		//Create FRE Viz object in Parent Project
+
+		//Get Node Numbers of the start and end nodes which are mapped with child porject node numbers.
+		Standard_Integer l_iNode1Num = m_mapChildProjNodeNumParentProjNodeNum.ChangeFind( l_pChildProjFREModel->getStartingNodeNumber()).IntegerValue();
+		Standard_Integer l_iNode2Num = m_mapChildProjNodeNumParentProjNodeNum.ChangeFind( l_pChildProjFREModel->getEndingNodeNumber()).IntegerValue();
+		
+		//Get FRE entity type
+		en_EntityType l_enNode1 = l_pChildProjFREModel->getStartingNodeEntityType(), l_enNode2 = l_pChildProjFREModel->getEndingNodeEntityType();
+
+		//Get Data IDs of the start and end nodes in the parent Project
+		TCollection_AsciiString l_strParentProjNode1DataID = GetDataIDOfFREStartOrEndNode(l_iNode1Num, l_enNode1);
+		TCollection_AsciiString l_strParentProjNode2DataID = GetDataIDOfFREStartOrEndNode(l_iNode2Num, l_enNode2);
+
+		//Create Viz Objects for the start and end nodes
+		TCollection_AsciiString l_strViz1ID, l_strViz2ID;
+		Ptr(VNetVizObject) l_Node1Obj = m_pMainDocCtrl->CreateVizEntity(l_enNode1, l_strParentProjNode1DataID, l_strViz1ID);
+		Ptr(VNetVizObject) l_Node2Obj = m_pMainDocCtrl->CreateVizEntity(l_enNode2, l_strParentProjNode2DataID, l_strViz2ID);
+
+		TCollection_AsciiString l_strFREName = l_pChildProjFREModel->getFREName();
+
+		//Create Empty FRE Viz Object
+		Ptr(VNetVizObject) l_pParentProjFREVizObj = VNetVizObject::CreateFRE(m_pMainDocCtrl->GetDataSource(), l_strFREName);
+
+		//Add FRE nodes and start and end nodes to FRE Viz Object
+		l_pParentProjFREVizObj->AddFRENode(l_Node1Obj);
+		for (int i = 1; i < l_seqFRENodes.Size() - 1; i++)
+		{
+			VNetVizPnt l_VnetPnt(l_seqFRENodes.ChangeValue(i)->GetNodePoint());
+			Ptr(VNetVizObject) l_pVnetObj = VNetVizObject::CreateFRENode(l_VnetPnt);
+			l_pParentProjFREVizObj->AddFRENode(l_pVnetObj);
+		}
+		l_pParentProjFREVizObj->AddFRENode(l_Node2Obj);
+
+		//Create FRE Engg object in Parent Project
+		TCollection_AsciiString l_strMainProjFREDataID = m_pMainSMModel->CreateFlowResistiveElement(l_pParentProjFREVizObj->GetVisualID(), l_strParentProjNode1DataID, l_strParentProjNode2DataID, l_pChildProjFREModel->GetEntityType());
+		Ptr(FREModel) l_MainProjFREModel =  FREModelFactory::getFREModel(l_strMainProjFREDataID, m_pMainProjectDataModel, m_pMainDocCtrl);
+
+
+		//Copy FRE Properties
+		switch (l_pChildProjFREModel->GetEntityType())
+		{
+			case VN_FRE_ENTR: 
 			{
-				TCollection_AsciiString l_strID = l_iter.Value();
-				l_pPara->SetID(l_strID);
-				l_pPara->UpdateXMLDataSrc();
-			}
-			else
+				Ptr(EntranceFREModel) l_ChildProjEntrFREModel = (EntranceFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(EntranceFREModel) l_MainProjEntrFREModel = (EntranceFREModel*)l_MainProjFREModel.operator->();
+				CopyEntranceFREModelProperties(l_ChildProjEntrFREModel, l_MainProjEntrFREModel);
 				break;
-			l_pPara = l_pPara->GetNext();
+			}
+			case VN_FRE_DHL: 
+			{
+				Ptr(DynamicHeadLossFREModel) l_ChildProjDHLFREModel = (DynamicHeadLossFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(DynamicHeadLossFREModel) l_MainProjDHLFREModel = (DynamicHeadLossFREModel*)l_MainProjFREModel.operator->();
+				CopyDynamicHeadLossFREProperties(l_ChildProjDHLFREModel, l_MainProjDHLFREModel);
+				break;
+			}
+			case VN_FRE_DPR:break;
+			case VN_FRE_LS: 
+			{
+				Ptr(LabyrinthSealFREModel) l_ChildLSFREModel = (LabyrinthSealFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(LabyrinthSealFREModel) l_MainLSFREModel = (LabyrinthSealFREModel*)l_MainProjFREModel.operator->();
+				CopyLabyrinthFREModelProperties(l_ChildLSFREModel, l_MainLSFREModel);
+				break;
+			}
+			case VN_FRE_RS: break;
+			case VN_FRE_FS: break;
+			case VN_FRE_TUBE:
+			{
+				Ptr(TubeFREModel) l_ChildProjTubeFREModel = (TubeFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(TubeFREModel) l_MainProjTubeFREModel = (TubeFREModel*)l_MainProjFREModel.operator->();
+				CopyTubeFREProperties(l_ChildProjTubeFREModel, l_MainProjTubeFREModel);
+				break;
+			}
+			case VN_FRE_ORIF: 
+			{
+				Ptr(OrificeFREModel) l_ChildProjOrificeFREModel = (OrificeFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(OrificeFREModel) l_MainProjOrificeFREModel = (OrificeFREModel*)l_MainProjFREModel.operator->();
+				CopyOrificeFREProperties(l_ChildProjOrificeFREModel, l_MainProjOrificeFREModel);
+				break;
+			}
+			case VN_FRE_PMPG: break;
+			case VN_FRE_MBEND: break;
+			case VN_FRE_SBEND: break;
+			case VN_FRE_FT: break;
+			case VN_FRE_GRAD: break;
+			case VN_FRE_ABRP: break;
+			case VN_FRE_RORIF: 
+			{
+				Ptr(RotatingOrificeFREModel) l_ChildProjRotOrifFREModel = (RotatingOrificeFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(RotatingOrificeFREModel) l_MainProjRotOrifFREModel = (RotatingOrificeFREModel*)l_MainProjFREModel.operator->();
+				CopyRotatingOrificeFREProperties(l_ChildProjRotOrifFREModel, l_MainProjRotOrifFREModel);
+				break;
+			}
+			case VN_FRE_CORIF: break;
+			case VN_FRE_DC: 
+			{
+				Ptr(DiskCavityPumpingFREModel) l_ChildDiskCavityFREModel = (DiskCavityPumpingFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(DiskCavityPumpingFREModel) l_MainDiskCavityFREModel = (DiskCavityPumpingFREModel*)l_MainProjFREModel.operator->();
+				CopyDiskCavityPumpingFREProperties(l_ChildDiskCavityFREModel, l_MainDiskCavityFREModel);
+				break;
+			}
+			case VN_FRE_TUBEBEND:break;
+			case VN_FRE_TOBI: break;
+			case VN_FRE_AFT: break;
+			case VN_FRE_RC: 
+			{
+				Ptr(ReCirculationFREModel) l_ChildRecircFREModel = (ReCirculationFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(ReCirculationFREModel) l_MainRecircFREModel = (ReCirculationFREModel*)l_MainProjFREModel.operator->();
+				CopyRecirculationFREProperites(l_ChildRecircFREModel, l_MainRecircFREModel);
+				break;
+			}
+			case VN_FRE_SS: 
+			{
+				Ptr(StaticSealFREModel) l_ChildStaticSealFREModel = (StaticSealFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(StaticSealFREModel) l_MainStaticSealFREModel = (StaticSealFREModel*)l_MainProjFREModel.operator->();
+				CopyStaticSealFREProperties(l_ChildStaticSealFREModel, l_MainStaticSealFREModel);
+				break;
+			}
+			case VN_FRE_BS: 
+			{
+				Ptr(BrushSealFREModel) l_ChildProjBSFREModel = (BrushSealFREModel*)l_pChildProjFREModel.operator->();
+				Ptr(BrushSealFREModel) l_MainProjBSFREModel = (BrushSealFREModel*)l_MainProjFREModel.operator->();
+				CopyBrushSealFREProperties(l_ChildProjBSFREModel, l_MainProjBSFREModel);
+				break;
+			}
+		}
+	}
+}
+
+Standard_Boolean ModelMergeController::OpenChildProject()
+{
+	try
+	{	
+		TCollection_AsciiString l_strFullPath = m_strChildProjectPath + m_strChildProjectName;
+		Ptr(CVNet_1_0AppController)	l_pAppCtrl = CVNet_1_0AppController::GetAppController();
+		TCollection_AsciiString l_strAppPath = l_pAppCtrl->GetApplicationPath();
+
+		m_pChildPrjDS = HFWDataSource::CreateXMLDataSource();
+		Standard_Boolean bSameVersion = m_pChildPrjDS->Initialize(
+			TCollection_AsciiString(l_strFullPath), //project file path
+			"",
+			"",
+			TCollection_AsciiString(l_pAppCtrl->GetApplicationPath() + "Project_MetaData.vncfg"), // ProjectMetaData file path
+			l_pAppCtrl->GetProductVersion()
+		);
+		
+		//create new instance of project
+		m_pChildProject = new CProject(m_pChildPrjDS, &m_pChildProjApplicationTreeData, &m_pChildProjAppTreeStructure);
+		m_pChildProjectDataModel = new ProjectDataModel(m_pChildProject);
+
+		//CApplicationTreeDataTable& l_pChildProjAppTreeDataTable = m_pChildProjApplicationTreeData->GetAppTreeDataTable();
+		//CApplicationTreeDataTable::Iterator l_iterChildProjTab(l_pChildProjAppTreeDataTable);
+		//Get Level One AppTreeData
+		CAppTreeData l_ChildProjAppTreeData = m_pChildProjectDataModel->GetLevelOneAppTreeData();
+		//for (; l_iterChildProjTab.More(); l_iterChildProjTab.Next())
+		//{
+		//	l_ChildProjAppTreeData = l_iterChildProjTab.Value();
+		//	//en_NodeType l_enNodeType = l_ChildProjAppTreeData.GetNodeType();
+		//	//Is this needed?
+		//	/*if (l_enNodeType == OP_INSTANCE && l_strSMOPValuePath == "")
+		//	{
+		//		CAppTreeData l_ParentAppTreeData = l_AppTreeData.GetParent().GetParent();
+		//		if (l_ParentAppTreeData.GetNodeType() == SM)
+		//		{
+		//			l_strSMOPValuePath = l_AppTreeData.GetValuePath();
+		//		}
+		//	}*/
+		//	if (LEVEL1 == l_ChildProjAppTreeData.GetNodeType())
+		//		break;
+		//}
+
+		//l_ChildProjAppTreeData is now Level 1
+		CApplicationTree l_LevelOneAppTree = m_pChildProjectDataModel->GetApplicationTreeFromValuePath( l_ChildProjAppTreeData.GetValuePath());
+		TCollection_AsciiString l_strLevelOneNodeID = l_LevelOneAppTree.GetObjectID();
+		Standard_Integer l_nColonIndex = l_strLevelOneNodeID.Search(":");
+		if (l_nColonIndex > 0)
+			l_strLevelOneNodeID.Split(l_nColonIndex - 1);
+
+		//Get Level1 Path
+		TCollection_AsciiString l_strDB;
+		AppTreeDataList l_listDB = l_ChildProjAppTreeData.Find(DBFILENAME);
+		l_strDB = l_listDB.First();
+		Standard_Integer l_Ind = l_strDB.SearchFromEnd("Level1.vndat");
+		if (l_Ind > 0)
+			l_strDB = l_strDB.SubString(1, l_Ind - 1);
+
+		m_pChildDocCtrl = new CVNet_1_0DocController(m_strChildProjectPath, l_strAppPath);
+		m_pChildDocCtrl->CreateXML(l_strDB/*l_strLevelOneNodeID + "/"*/,
+				"", l_pAppCtrl->GetProductVersion(), NULL/*l_pProgressThread->getDataModel()*/);
+		TCollection_AsciiString l_strLevelOneNodeName = l_LevelOneAppTree.GetNodeName();
+		//m_pChildDocCtrl->SetLevelOneNodeName(l_strLevelOneNodeName, Standard_True);
+
+		m_pChildProjOPs = VNetDataMap::CreateDataMap(1);
+		//Load Operating Points
+		StringList l_listOPIDs = COperatingPointData::GetOPIDList(m_pChildDocCtrl->GetDataSource());
+		StringList::Iterator l_iterOPID(l_listOPIDs);
+		for (; l_iterOPID.More(); l_iterOPID.Next())
+		{
+			Ptr(COperatingPointData) l_pOP = new COperatingPointData(m_pChildDocCtrl->GetDataSource(), l_iterOPID.ChangeValue());
+			m_pChildProjOPs->AddData(l_pOP->GetOPName(), l_pOP);
+		}
+
+		//Load Components
+		m_pChildDocCtrl->LoadComponents();
+		m_pChildDocCtrl->LoadSubSystem();
+		
+	}
+	catch (HFWException* l_pEx)
+	{
+		Ptr(HFWException) l_pNewExp = new HFWException(__LINE__, "ModelMergeController::OpenChildProject", __FILE__,
+			l_pEx->GetErrorMessage(), l_pEx);
+		throw l_pNewExp.operator->();
+		HFWRethrowException(l_pEx, m_strChildProjectPath + " is not a valid Visual Network Project!", "ModelMergeController::OpenChildProject", __FILE__, __LINE__);
+	}
+	return Standard_True;
+}
+
+void ModelMergeController::LoadCurrentProject()
+{
+	Ptr(CVNet_1_0AppController)	l_pAppCtrl = CVNet_1_0AppController::GetAppController();
+
+	//Get DocController and Data Source from the primary project
+	m_pMainDocCtrl = l_pAppCtrl->GetActiveDocCtrl();
+	m_pMainPrjDS = m_pMainDocCtrl->GetDataSource();
+	CApplicationTreeDataTable& l_pAppTreeDataTable = l_pAppCtrl->GetAppTreeData().GetAppTreeDataTable();
+	CApplicationTreeDataTable::Iterator l_iterMainProjTab(l_pAppTreeDataTable);
+	for (; l_iterMainProjTab.More(); l_iterMainProjTab.Next())
+	{
+		CAppTreeData l_AppTreeData = l_iterMainProjTab.Value();
+		en_NodeType l_enNodeType = l_AppTreeData.GetNodeType();
+		if (SM == l_enNodeType)
+		{
+			m_pMainSMModel = l_AppTreeData.GetModel(m_pMainDocCtrl);
+			break;
+		}
+	}
+	m_pMainProjectDataModel = new ProjectDataModel(l_pAppCtrl->GetProject());
+
+	m_pMainProjOPs = VNetDataMap::CreateDataMap(1);
+	//Load Operating Points
+	StringList l_listOPIDs = COperatingPointData::GetOPIDList(m_pMainDocCtrl->GetDataSource());
+	StringList::Iterator l_iterOPID(l_listOPIDs);
+	for (; l_iterOPID.More(); l_iterOPID.Next())
+	{
+		Ptr(COperatingPointData) l_pOP = new COperatingPointData(m_pMainDocCtrl->GetDataSource(), l_iterOPID.ChangeValue());
+		m_pMainProjOPs->AddData(l_pOP->GetOPName(), l_pOP);
+	}
+
+	//Load Components
+	m_pMainDocCtrl->LoadComponents();
+	m_pMainDocCtrl->LoadSubSystem();
+}
+
+Standard_Boolean ModelMergeController::isModelMergeFeasible()
+{
+	//Check OPs
+	Standard_Boolean l_bIsModelMergeFeasible = Standard_True;
+	MapOfString l_mapChildOPNames = m_pChildProjOPs->GetKeys();
+	MapOfString l_mapMainOPNames = m_pMainProjOPs->GetKeys();
+
+
+	MapOfString::Iterator l_iterChildOP(l_mapChildOPNames);
+	for (; l_iterChildOP.More(); l_iterChildOP.Next())
+	{
+		if (!l_mapMainOPNames.Contains(l_iterChildOP.Value()))
+		{
+			l_bIsModelMergeFeasible = Standard_False;
+			m_strErrorMessages += "All Operating Points in the Child Project are not present in the Main Project.\n";
+			break;
 		}
 	}
 
-protected:
-	TCollection_AsciiString							m_strSerCur;
-	TCollection_AsciiString							m_strSerVal;
-	Ptr(CFlowTableDataParaLegacy)					m_pFirstPara;
-	//keep next running clearance op map object
-    Ptr(CFlowTableSerCurMapLegacy)					m_pNext;
-
-	TCollection_AsciiString							m_strID;
-private:
-
-};
-
-#endif //_CSeriesCurveMapper _HeaderFile_
-
-
-
-
-
-//----------------------------------------------------------------------------//
-//                                                                            //
-//   This material contains, and is a part of a computer software program     //
-//   which is, proprietary and confidential information owned by:             //
-//                  Honeywell Technologies Solution Lab, INC.                 //
-//   The program, including this material, may not be duplicated, disclosed   //
-//   or reproduced in whole or in part for any purpose without the express    //
-//   written authorization of Honeywell.  All authorized                      //
-//   reproductions must be marked with this legend.                           //
-//                                                                            //
-//              © 2006 Honeywell Technologies Solution Lab, Inc.              //
-//              Honeywell Technologies Solution Lab, Incorporated             //
-//                            All rights reserved.                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-//
-//    MODULE NAME       :  FlowTable SeriesCurveMapper.cpp
-//
-//    DESCRIPTIVE NAME  :   CFlowTableSeriesCurveMapper Class Definition
-//
-//    MODULE FUNCTION   :   Source file for  FlowTable SeriesCurveMapper EngineeringObject
-//
-//    MODULE AUTHOR     :   Gaurav Banda
-//
-//    DATE MODULE WRITTEN:  14/11/2007 06:06:00 PM
-//
-//----------------------------------------------------------------------------
-//
-//
-// History:
-// 
-//
-/****************************************************************************** 
- *                                                                            * 
- *                           Program Include Files                            * 
- *                                                                            * 
- ******************************************************************************/
-#include "stdafx.h"
-#ifndef	_CSeriesCurveMapper_HeaderFile_
-#include <SeriesCurveMapper.h>
-#endif //_CSealRunningClearanceOPMapper_HeaderFile_
-
-#ifndef __CTableDataParametersList_HeaderFile_
-#include <TableDataParametersList.h>
-#endif //__CTableDataParametersList_HeaderFile_
-
-//////////////////////////////// PUBLIC ///////////////////////////////////////  
-//================================ LIFECYCLE ================================== 
-//======================= Construction and Destruction ======================== 
-
-/*******************************************************************************/
-//   Function Name  :   Constructor with parameters
-//   Parameters     :   const Ptr(CVNet_1_0DocController)& -->DocController Obj
-//   Description    :   
-//   Modify History :
-//      1.              Date    ->  15/09/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-//CFlowTableSeriesCurveMapper::CFlowTableSeriesCurveMapper (const Ptr(CVNet_1_0DocController)& l_pDocCtrl)							   
-//{
-//	m_pDataSrc = l_pDocCtrl->GetDataSource();
-//	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
-//	m_pDataRow  = l_pDataTab->AddNewRow();
-//
-//	//crate all 10 FlowTableTableDataParameters rows and add them in list
-//	for(Standard_Integer l_nCnt = 1; l_nCnt <= 10; l_nCnt++)
-//	{
-//		Ptr(CTableDataParametersList) l_pPara = new CTableDataParametersList(l_pDocCtrl->GetDataSource());
-//		SetTDParameterID(l_pPara->GetObjectID());
-//	}
-//}
-/*******************************************************************************/
-//   Function Name  :   Constructor with Parameters
-//   Parameters     :   const Ptr(CVNet_1_0DocController)& -> Doc Controller Object
-//						const TCollection_AsciiString& - Row ID 
-//						Standard_Integer l_nFlagOPID 
-//   Description    :   l_nFlagSeriesCurve = 1 => Creation of the New Object and the l_strID is
-//						the SeriesCurve
-//						l_nFlagSeriesCurve = 0 => Retrieving the data from the existing Object ID
-//						so, in this case l_strID is the class Object ID
-//   Modify History :
-//      1.              Date    ->  15/11/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-//CFlowTableSeriesCurveMapper::CFlowTableSeriesCurveMapper(const Ptr(CVNet_1_0DocController)& l_pDocCtrl,
-//																const TCollection_AsciiString& l_strID,
-//																Standard_Integer l_nFlagSeriesCurve )							    
-//{
-//	m_pDataSrc = l_pDocCtrl->GetDataSource();
-//	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
-//
-//	if( l_nFlagSeriesCurve ==1)
-//	{
-//		m_pDataRow = l_pDataTab->AddNewRow();
-//	}
-//	else
-//	{
-//		m_pDataRow  = l_pDataTab->GetRow(l_strID);
-//	}
-//}
-
-/*******************************************************************************/
-//   Function Name  :   Constructor with Parameters
-//   Parameters     :   
-//   Description    :   
-//   Modify History :
-//      1.              Date    ->  22 Nov, 2007
-//                      Author  ->  Ashish Negi
-//                      Purpose ->  Created
-/*******************************************************************************/
-CFlowTableSeriesCurveMapper::CFlowTableSeriesCurveMapper
-(const Ptr(HFWDataSource)& l_pDataSrc,const TCollection_AsciiString& l_strID)							    
-{
-	m_pDataSrc = l_pDataSrc;
-	Ptr(HFWDataTable) l_pDataTab = m_pDataSrc->GetTable("FlowTableSeriesCurveMapper");
-
-	m_pDataRow  = l_pDataTab->GetRow(l_strID);
-}
-
-
-/*******************************************************************************/
-//   Function Name  :   Destructor
-//   Parameters     :   
-//   Description    :   
-//   Modify History :
-//      1.              Date    ->  15/11/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-
-CFlowTableSeriesCurveMapper::~CFlowTableSeriesCurveMapper ()
-{
-}
-/*******************************************************************************/
-//   Function Name  :   SetSeriesCurve
-//   Parameters     :   TCollection_AsciiString&
-//   Description    :   Sets the seriesCurve
-//   Modify History :
-//      1.              Date    ->  15/11/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-
-void CFlowTableSeriesCurveMapper::SetSeriesCurve(const TCollection_AsciiString& pSeriesCurve)
-{
-	m_pDataRow->GetColumn("SeriesCurve")->SetData(pSeriesCurve);
-}
-/*******************************************************************************/
-//   Function Name  :   SetSeriesValue
-//   Parameters     :   TCollection_AsciiString&
-//   Description    :   Sets the series Value
-//   Modify History :
-//      1.              Date    ->  15/11/2007 
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-
-void CFlowTableSeriesCurveMapper::SetSeriesValue(TCollection_AsciiString& pSeriesValue)
-{
-	m_pDataRow->GetColumn("SeriesValue")->SetData(pSeriesValue);
-}
-/*******************************************************************************/
-//   Function Name  :   GetSeriesCurve
-//   Parameters     :   
-//   Return			:	TCollection_AsciiString
-//   Description    :   Returns the SeriesCurve
-//   Modify History :
-//      1.              Date    ->  15/11/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-
-TCollection_AsciiString CFlowTableSeriesCurveMapper::GetSeriesCurve()
-{
-	return m_pDataRow->GetColumn("SeriesCurve")->GetData();
-}
-/*******************************************************************************/
-//   Function Name  :   GetSeriesValue
-//   Parameters     :   
-//   Return			:	TCollection_AsciiString
-//   Description    :   Returns SeriesValue
-//   Modify History :
-//      1.              Date    ->  15/11/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-
-TCollection_AsciiString CFlowTableSeriesCurveMapper::GetSeriesValue()
-{
-	return m_pDataRow->GetColumn("SeriesValue")->GetData();
-}
-
-/*******************************************************************************/
-//   Function Name  :   GetTDParametersList
-//   Parameters     :   
-//	 Return			:   TDParameterList - StringList
-//   Description    :   Returns TableData Parameters ID List
-//   Modify History :
-//      1.              Date    ->  15/11/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-
-TDParameterList CFlowTableSeriesCurveMapper::GetTDParametersList()
-{
-	TDParameterList l_ListTDParameters;
-	Ptr(HFWDataSubTable) l_pDataSubTab = 
-			m_pDataRow->GetColumn("TableDataParameterList")->GetSubTable();
-
-	Standard_Integer     l_nRows       = l_pDataSubTab->GetNoRows();
-	for(Standard_Integer i=0; i<l_nRows; i++){
-		try {
-			Ptr( HFWDataRow) l_pDataRow = l_pDataSubTab->GetRow(i);
-			Ptr( HFWDataColumn) l_pDataSubCol 
-					= l_pDataRow->GetColumn(TCollection_AsciiString("TableDataParametersListID"));
-			l_ListTDParameters.Append(l_pDataSubCol->GetData());
-		}catch(HFWException* pEx){
-			pEx->PrintStack();
-		}		
-	}
-	return l_ListTDParameters;
-}
-/*******************************************************************************/
-//   Function Name  :   SetTDParameterID
-//   Parameters     :   TCollection_AsciiString -> ParameterID
-//						Attrib Object ID (CTableDataParameters ID)s 
-//	 Return			:   
-//   Description    :   Returns TableData Parameter Attributes ID List
-//   Modify History :
-//      1.              Date    ->  15/11/2007
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-void CFlowTableSeriesCurveMapper::SetTDParameterID( TCollection_AsciiString& pTDParameterID)
-{
-	Ptr( HFWDataSubTable) l_pDataSubTab = 
-		m_pDataRow->GetColumn( "TableDataParameterList")->GetSubTable();
-	Ptr( HFWDataRow) l_pDataRow = l_pDataSubTab->AddNewRow();
-
-	l_pDataRow->GetColumn(TCollection_AsciiString("TableDataParametersListID"))->SetData( pTDParameterID);
-}
-/*******************************************************************************/
-//   Function Name  :   Remove1DSurfaceTempIDRow
-//   Parameters     :   __(N.A)
-//						
-//	 Return			:   
-//   Description    :   Removes One Row of the 1D Surface Temperature ID Row From the Database
-//   Modify History :
-//      1.              Date    ->  15/11/2007 
-//                      Author  ->  Gaurav Banda
-//                      Purpose ->  Created
-/*******************************************************************************/
-void CFlowTableSeriesCurveMapper::RemoveTDParameterIDRow()
-{
-	try
+	//Check Components
+	if (m_pMainDocCtrl->GetNoOfComponents() + m_pChildDocCtrl->GetNoOfComponents() > 10)
 	{
-		// Getting the Sub Table for the DiskCav1DSurfTempAttribList
-		Ptr(HFWDataSubTable) l_pDataSubTab = 
-				m_pDataRow->GetColumn("TableDataParameterList")->GetSubTable();
-		
-		// Getting the Number of Rows
-		Standard_Integer l_nRows = l_pDataSubTab->GetNoRows();
-															
-		// Getting the Row for the First																												
-		Ptr( HFWDataRow) l_pDataRow = l_pDataSubTab->GetRow(1);
-		// Getting the subcolumn 
-		Ptr( HFWDataColumn) l_pDataSubCol 
-						= l_pDataRow->GetColumn(TCollection_AsciiString("TableDataParametersListID"));
-		// Getting the Data for the sub Column -> First Data ID
-		TCollection_AsciiString l_strTDParameterID = l_pDataSubCol->GetData();
-
-		/*
-		 * Removing 1D Disk Cavity Geometry ID row corresponding to this data row was deleted 
-		 * externally before while saving the data into the 1D Disk Cavity Geometry
-		 */
-
-		// Removing 1D Surface Temperature Attribute Row  for the First ID 
-		Ptr( HFWDataTable) l_pTDParameterTab = m_pDataSrc->GetTable( "FlowTableTableDataParameters");
-		l_pTDParameterTab ->RemoveRow( l_strTDParameterID );
-
-		// Removing the 1D Surface Temperature Data ID from the sequence
-		l_pDataSubTab->RemoveRow(1); // Removing the First Row
-																														
+		l_bIsModelMergeFeasible = Standard_False;
+		m_strErrorMessages += "Total No. Of Componets between the Main and the Child Projects cannot be more than 10.\n";
 	}
-	catch( HFWException* pEx)
+
+	//Check Sub System Mappings
+	int l_iMainProjSubSystemsMapped = 0;
+	for (int i = 1; i <= 9; i++)
 	{
-		TCollection_AsciiString l_strErrMsg;
-		Copy( l_strErrMsg, pEx->GetErrorMessage());
-		VNetLogger::Log( VN_LOG_ERROR, "CFlowTableSeriesCurveMapper::RemoveTDParameterIDRow",
-							l_strErrMsg, __LINE__);
-	}				
+		MapOfFREID l_mapFREID = m_pMainDocCtrl->GetSubSystemFREs(i);
+		if (l_mapFREID.Size() > 0)
+		{
+			l_iMainProjSubSystemsMapped++;
+		}
+	}
 	
+	MapOfString l_mapChilProjCompsMapped;
+	int l_iChildProjSubSystemsMapped = 0;
+	for (int i = 1; i <= 9; i++)
+	{
+		MapOfFREID l_mapFREID = m_pChildDocCtrl->GetSubSystemFREs(i);
+		if (l_mapFREID.Size() > 0)
+		{
+			l_iChildProjSubSystemsMapped++;
+		}
+	}
+
+	if ((l_iMainProjSubSystemsMapped + l_iChildProjSubSystemsMapped)>9)
+	{
+		l_bIsModelMergeFeasible = Standard_False;
+		m_strErrorMessages += "Total Subsystems mapped in total both Main and Child Project cannot be more than 9.\n";
+	}
+
+	return l_bIsModelMergeFeasible;
 }
 
-
-/*******************************************************************************/
-//   Function Name  :   GetParameter
-//   Parameters     :   TCollection_AsciiString
-//						
-//	 Return			:   
-//   Description    :   ge tparameter object for a given ID
-//   Modify History :
-//      1.              Date    ->  27 Nov, 2007
-//                      Author  ->  Ashish Negi
-//                      Purpose ->  Created
-/*******************************************************************************/
-Ptr(CTableDataParametersList) CFlowTableSeriesCurveMapper::GetParameter
-(const TCollection_AsciiString& l_strID)
+TCollection_AsciiString ModelMergeController::GetDataIDOfFREStartOrEndNode(Standard_Integer p_iNodeNumber, en_EntityType p_enEntityType)
 {
-	return new CTableDataParametersList(m_pDataSrc,l_strID);
+	switch (p_enEntityType)
+	{
+	case VN_SEC_NODE:
+	{
+		return  SecondaryNodeModel::getSecondaryNodeModel(p_iNodeNumber, m_pMainDocCtrl->GetDataSource())->GetDataID();
+		break;
+	}
+	case NON_AERO_BC:
+	case AERO_BC:
+	{
+		return BoundaryConditionModel::getBoundaryConditionModel(p_iNodeNumber, m_pMainDocCtrl->GetDataSource())->GetDataID();
+		break;
+	}
+	}
+	return "";
+}
+
+void ModelMergeController::CopyBrushSealFREProperties(Ptr(BrushSealFREModel) p_pChildProjBrushSealFREModel, Ptr(BrushSealFREModel) p_pMainProjBrushSealFREModel)
+{
+	p_pMainProjBrushSealFREModel->setGeometryDescription(p_pChildProjBrushSealFREModel->getGeometryDescription());
+	p_pMainProjBrushSealFREModel->setRadius(p_pChildProjBrushSealFREModel->getRadius());
+
+	p_pMainProjBrushSealFREModel->setBackPlateGapDescription(p_pChildProjBrushSealFREModel->getBackPlateGapDescription());
+	p_pMainProjBrushSealFREModel->setBackPlateGapType(p_pChildProjBrushSealFREModel->getBackPlateGapType());
+
+	p_pMainProjBrushSealFREModel->setThermalDescription(p_pChildProjBrushSealFREModel->getThermalDescription());
+	p_pMainProjBrushSealFREModel->setThermalAttribType(p_pChildProjBrushSealFREModel->getThermalAttribType());
+
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for (; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjBrushSealFREModel->setBackPlateGapValue(l_iterOP.Value(), p_pChildProjBrushSealFREModel->getBackPlateGapValue(l_iterOP.Value()));
+		p_pMainProjBrushSealFREModel->setDesignOPBackPlateGapValue(l_iterOP.Value(), p_pChildProjBrushSealFREModel->getDesignOPBackPlateGapValue(l_iterOP.Value()));
+
+		p_pMainProjBrushSealFREModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjBrushSealFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjBrushSealFREModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjBrushSealFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+
+	p_pMainProjBrushSealFREModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyDiskCavityPumpingFREProperties(Ptr(DiskCavityPumpingFREModel) p_pChildProjDiskCavityFREModel, Ptr(DiskCavityPumpingFREModel) p_pMainProjDiskCavityFREModel)
+{
+	p_pMainProjDiskCavityFREModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyDynamicHeadLossFREProperties(Ptr(DynamicHeadLossFREModel) p_pChildProjDHLFREModel, Ptr(DynamicHeadLossFREModel) p_pMainProjDHLModel)
+{
+	p_pMainProjDHLModel->setHeadLossDescription(p_pChildProjDHLFREModel->getHeadLossDescription());
+	p_pMainProjDHLModel->setTotalHeadLoss(p_pChildProjDHLFREModel->getTotalHeadLoss());
+	
+	p_pMainProjDHLModel->setFlowArea1Description(p_pChildProjDHLFREModel->getFlowArea1Description());
+	p_pMainProjDHLModel->setFlowArea1SectionType(p_pChildProjDHLFREModel->getFlowArea1SectionType());
+	p_pMainProjDHLModel->setFlowArea1Param1(p_pChildProjDHLFREModel->getFlowArea1Param1());
+	p_pMainProjDHLModel->setFlowArea1Param2(p_pChildProjDHLFREModel->getFlowArea1Param2());
+	p_pMainProjDHLModel->setFlowArea1Quantity(p_pChildProjDHLFREModel->getFlowArea1Quantity());
+
+	p_pMainProjDHLModel->setFlowMinAreaDescription(p_pChildProjDHLFREModel->getFlowMinAreaDescription());
+	p_pMainProjDHLModel->setFlowMinAreaSectionType(p_pChildProjDHLFREModel->getFlowMinAreaSectionType());
+	p_pMainProjDHLModel->setFlowMinAreaParam1(p_pChildProjDHLFREModel->getFlowMinAreaParam1());
+	p_pMainProjDHLModel->setFlowMinAreaParam2(p_pChildProjDHLFREModel->getFlowMinAreaParam2());
+	p_pMainProjDHLModel->setFlowMinAreaQuantity(p_pChildProjDHLFREModel->getFlowMinAreaQuantity());
+
+	p_pMainProjDHLModel->setFlowArea2Description(p_pChildProjDHLFREModel->getFlowArea2Description());
+	p_pMainProjDHLModel->setFlowArea2SectionType(p_pChildProjDHLFREModel->getFlowArea2SectionType());
+	p_pMainProjDHLModel->setFlowArea2Param1(p_pChildProjDHLFREModel->getFlowArea2Param1());
+	p_pMainProjDHLModel->setFlowArea2Param2(p_pChildProjDHLFREModel->getFlowArea2Param2());
+	p_pMainProjDHLModel->setFlowArea2Quantity(p_pChildProjDHLFREModel->getFlowArea2Quantity());
+
+	p_pMainProjDHLModel->setThermalDescription(p_pChildProjDHLFREModel->getThermalDescription());
+	p_pMainProjDHLModel->setThermalAttribType(p_pChildProjDHLFREModel->getThermalAttribType());
+
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for (; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjDHLModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjDHLFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjDHLModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjDHLFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+
+	p_pMainProjDHLModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyEntranceFREModelProperties(Ptr(EntranceFREModel) p_pChildProjEntrFREModel, Ptr(EntranceFREModel) p_pMainProjEntrFREModel)
+{
+	p_pMainProjEntrFREModel->setHeadLossDescription(p_pChildProjEntrFREModel->getHeadLossDescription());
+	p_pMainProjEntrFREModel->setTotalHeadLoss(p_pChildProjEntrFREModel->getTotalHeadLoss());
+
+	p_pMainProjEntrFREModel->setFlowDescription(p_pChildProjEntrFREModel->getFlowDescription());
+	p_pMainProjEntrFREModel->setFlowSectionType(p_pChildProjEntrFREModel->getFlowSectionType());
+	p_pMainProjEntrFREModel->setFlowParam1(p_pChildProjEntrFREModel->getFlowParam1());
+	p_pMainProjEntrFREModel->setFlowParam2(p_pChildProjEntrFREModel->getFlowParam2());
+	p_pMainProjEntrFREModel->setFlowQuantity(p_pChildProjEntrFREModel->getFlowQuantity());
+
+	p_pMainProjEntrFREModel->setThermalDescription(p_pChildProjEntrFREModel->getThermalDescription());
+	p_pMainProjEntrFREModel->setThermalAttribType(p_pChildProjEntrFREModel->getThermalAttribType());
+
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for (; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjEntrFREModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjEntrFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjEntrFREModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjEntrFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+
+	p_pMainProjEntrFREModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyLabyrinthFREModelProperties(Ptr(LabyrinthSealFREModel) p_pChildProjLabSealFREModel, Ptr(LabyrinthSealFREModel) p_pMainProjLabSealFREModel)
+{
+	p_pMainProjLabSealFREModel->setGeomDescription(p_pChildProjLabSealFREModel->getGeomDescription());
+	p_pMainProjLabSealFREModel->setRadius(p_pChildProjLabSealFREModel->getRadius());
+	p_pMainProjLabSealFREModel->setToothPitch(p_pChildProjLabSealFREModel->getToothPitch());
+	p_pMainProjLabSealFREModel->setToothStep(p_pChildProjLabSealFREModel->getToothStep());
+	p_pMainProjLabSealFREModel->setToothCount(p_pChildProjLabSealFREModel->getTeethCount().IntegerValue());
+	p_pMainProjLabSealFREModel->setLandMaterialAsInteger(p_pChildProjLabSealFREModel->getLandMaterialAsInteger());
+	
+	p_pMainProjLabSealFREModel->setThermalDescription(p_pChildProjLabSealFREModel->getThermalDescription());
+	p_pMainProjLabSealFREModel->setThermalAttribType(p_pChildProjLabSealFREModel->getThermalAttribType());
+
+	p_pMainProjLabSealFREModel->setSealClearanceDescription(p_pChildProjLabSealFREModel->getSealClearanceDescription());
+	p_pMainProjLabSealFREModel->setSealClearanceType(p_pChildProjLabSealFREModel->getSealClearanceType());
+
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for (; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjLabSealFREModel->setSealClearanceValue(l_iterOP.Value(), p_pChildProjLabSealFREModel->getSealClearanceValue(l_iterOP.Value()));
+		p_pMainProjLabSealFREModel->setDesignOPSealClearanceValue(l_iterOP.Value(), p_pChildProjLabSealFREModel->getDesignOPSealClearanceValue(l_iterOP.Value()));
+		p_pMainProjLabSealFREModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjLabSealFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjLabSealFREModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjLabSealFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+
+
+	p_pMainProjLabSealFREModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyOrificeFREProperties(Ptr(OrificeFREModel) p_pChildProjOrificeFREModel, Ptr(OrificeFREModel) p_pMainProjOrificeModel)
+{
+	p_pMainProjOrificeModel->setFlowCoefficientDescription(p_pChildProjOrificeFREModel->getFlowCoefficientDescription());
+	p_pMainProjOrificeModel->setCorrelationNumber(p_pChildProjOrificeFREModel->getCorrelationNumber());
+	p_pMainProjOrificeModel->setTuningFactor(p_pChildProjOrificeFREModel->getTuningFactor());
+	p_pMainProjOrificeModel->setOverlapTypeK(p_pChildProjOrificeFREModel->getOverlapTypeK());
+	p_pMainProjOrificeModel->setFlowCoefficient(p_pChildProjOrificeFREModel->getFlowCoefficient());
+	p_pMainProjOrificeModel->setOrificeLength(p_pChildProjOrificeFREModel->getOrificeLength());
+	p_pMainProjOrificeModel->setOrificeFilletRadius(p_pChildProjOrificeFREModel->getOrificeFilletRadius());
+	p_pMainProjOrificeModel->setBeta(p_pChildProjOrificeFREModel->getBeta());
+
+	p_pMainProjOrificeModel->setFlowDescription(p_pChildProjOrificeFREModel->getFlowDescription());
+	p_pMainProjOrificeModel->setFlowSectionType(p_pChildProjOrificeFREModel->getFlowSectionType());
+	p_pMainProjOrificeModel->setFlowParam1(p_pChildProjOrificeFREModel->getFlowParam1());
+	p_pMainProjOrificeModel->setFlowParam2(p_pChildProjOrificeFREModel->getFlowParam2());
+	p_pMainProjOrificeModel->setFlowQuantity(p_pChildProjOrificeFREModel->getFlowQuantity());
+
+	p_pMainProjOrificeModel->setThermalDescription(p_pChildProjOrificeFREModel->getThermalDescription());
+	p_pMainProjOrificeModel->setThermalAttribType(p_pChildProjOrificeFREModel->getThermalAttribType());
+
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for(; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjOrificeModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjOrificeFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjOrificeModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjOrificeFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+
+	p_pMainProjOrificeModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyRecirculationFREProperites(Ptr(ReCirculationFREModel) p_pChildProjRecirFREModel, Ptr(ReCirculationFREModel) p_pMainProjRecirFREModel)
+{
+	p_pMainProjRecirFREModel->setFlowCoefficientDescription(p_pChildProjRecirFREModel->getFlowCoefficientDescripton());
+	p_pMainProjRecirFREModel->setFlowCoefficient(p_pChildProjRecirFREModel->getFlowCoefficient());
+	p_pMainProjRecirFREModel->setTuningFactor(p_pChildProjRecirFREModel->getTuningFactor());
+	p_pMainProjRecirFREModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyRotatingOrificeFREProperties(Ptr(RotatingOrificeFREModel) p_pChildProjRotatingFREModel, Ptr(RotatingOrificeFREModel) p_pMainProjRotatingOrificeModel)
+{
+	p_pMainProjRotatingOrificeModel->setFlowDescription(p_pChildProjRotatingFREModel->getFlowDescription());
+	p_pMainProjRotatingOrificeModel->setFlowSectionType(p_pChildProjRotatingFREModel->getFlowSectionType());
+	p_pMainProjRotatingOrificeModel->setFlowParam1(p_pChildProjRotatingFREModel->getFlowParam1());
+	p_pMainProjRotatingOrificeModel->setFlowParam2(p_pChildProjRotatingFREModel->getFlowParam2());
+	p_pMainProjRotatingOrificeModel->setFlowQuantity(p_pChildProjRotatingFREModel->getFlowQuantity());
+
+	p_pMainProjRotatingOrificeModel->setThermalDescription(p_pChildProjRotatingFREModel->getThermalDescription());
+	p_pMainProjRotatingOrificeModel->setThermalAttribType(p_pChildProjRotatingFREModel->getThermalAttribType());
+
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for (; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjRotatingOrificeModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjRotatingFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjRotatingOrificeModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjRotatingFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+
+	p_pMainProjRotatingOrificeModel->setFlowCoeficientDescription(p_pChildProjRotatingFREModel->getFlowCoeficientDescription());
+	p_pMainProjRotatingOrificeModel->setFlowCoefficientCorrelationNumber(p_pChildProjRotatingFREModel->getFlowCoefficientCorrelationNumber());
+	p_pMainProjRotatingOrificeModel->setInletRadius(p_pChildProjRotatingFREModel->getInletRadius());
+	p_pMainProjRotatingOrificeModel->setInletSwirlRatio(p_pChildProjRotatingFREModel->getInletSwirlRatio());
+	p_pMainProjRotatingOrificeModel->setFlowCoefficient(p_pChildProjRotatingFREModel->getFlowCoefficient());
+	
+	p_pMainProjRotatingOrificeModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyStaticSealFREProperties(Ptr(StaticSealFREModel) p_pChildProjStaticSealFREModel, Ptr(StaticSealFREModel) p_pMainProjStaticSealFREModel)
+{
+	p_pMainProjStaticSealFREModel->setGeomDescription(p_pChildProjStaticSealFREModel->getGeomDescription());
+	p_pMainProjStaticSealFREModel->setGeomType(p_pChildProjStaticSealFREModel->getGeomType());
+	p_pMainProjStaticSealFREModel->setGeomDiameter(p_pChildProjStaticSealFREModel->getGeomDiameter());
+	p_pMainProjStaticSealFREModel->setSealingSurfacesNumber(p_pChildProjStaticSealFREModel->getSealingSurfacesInteger());
+
+	p_pMainProjStaticSealFREModel->setFrictionDescription(p_pChildProjStaticSealFREModel->getFrictionDescription());
+	p_pMainProjStaticSealFREModel->setCorrelationNumber(p_pChildProjStaticSealFREModel->getCorrelationNumber());
+	p_pMainProjStaticSealFREModel->setConvoluteNumber(p_pChildProjStaticSealFREModel->getConvoluteNumber());
+	p_pMainProjStaticSealFREModel->setRoughness(p_pChildProjStaticSealFREModel->getRoughness());
+	p_pMainProjStaticSealFREModel->setCompression(p_pChildProjStaticSealFREModel->getCompression());
+	p_pMainProjStaticSealFREModel->setGap(p_pChildProjStaticSealFREModel->getGap());
+
+	p_pMainProjStaticSealFREModel->setThermalDescription(p_pChildProjStaticSealFREModel->getThermalDescription());
+	p_pMainProjStaticSealFREModel->setThermalAttribType(p_pChildProjStaticSealFREModel->getThermalAttribType());
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for (; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjStaticSealFREModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjStaticSealFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjStaticSealFREModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjStaticSealFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+	
+	p_pMainProjStaticSealFREModel->UpdateEnggObject();
+}
+
+void ModelMergeController::CopyTubeFREProperties(Ptr(TubeFREModel) p_pChildProjTubeFREModel, Ptr(TubeFREModel) p_pMainProjTubeFREModel)
+{
+	p_pMainProjTubeFREModel->setFlowDescription(p_pChildProjTubeFREModel->getFlowDescription());
+	p_pMainProjTubeFREModel->setFlowSectionType(p_pChildProjTubeFREModel->getFlowSectionType());
+	p_pMainProjTubeFREModel->setFlowParam1(p_pChildProjTubeFREModel->getFlowParam1());
+	p_pMainProjTubeFREModel->setFlowParam2(p_pChildProjTubeFREModel->getFlowParam2());
+	p_pMainProjTubeFREModel->setFlowQuantity(p_pChildProjTubeFREModel->getFlowQuantity());
+
+	p_pMainProjTubeFREModel->setFlowCoeficientDescription(p_pChildProjTubeFREModel->getFlowCoeficientDescription());
+	p_pMainProjTubeFREModel->setCorrelationNumber(p_pChildProjTubeFREModel->getCorrelationNumber());
+	p_pMainProjTubeFREModel->setEntranceLoss(p_pChildProjTubeFREModel->getEntranceLoss());
+	p_pMainProjTubeFREModel->setFrictionLength(p_pChildProjTubeFREModel->getFrictionLength());
+	p_pMainProjTubeFREModel->setAbsoluteRoughness(p_pChildProjTubeFREModel->getAbsoluteRoughness());
+	p_pMainProjTubeFREModel->setMoodyFrictionFactor(p_pChildProjTubeFREModel->getMoodyFrictionFactor());
+	
+	p_pMainProjTubeFREModel->setThermalDescription(p_pChildProjTubeFREModel->getThermalDescription());
+	p_pMainProjTubeFREModel->setThermalAttribType(p_pChildProjTubeFREModel->getThermalAttribType());
+	MapOfString l_OPNames = m_pChildProjOPs->GetKeys();
+	MapOfString::Iterator l_iterOP(l_OPNames);
+	for (; l_iterOP.More(); l_iterOP.Next())
+	{
+		p_pMainProjTubeFREModel->setDeltaThermalValue(l_iterOP.Value(), p_pChildProjTubeFREModel->getDeltaThermalValue(l_iterOP.Value()));
+		p_pMainProjTubeFREModel->setDesignOPDeltaThermalValue(l_iterOP.Value(), p_pChildProjTubeFREModel->getDesignOPDeltaThermalValue(l_iterOP.Value()));
+	}
+
+	p_pMainProjTubeFREModel->UpdateEnggObject();
+}
+
+TCollection_AsciiString ModelMergeController::GetErrorMessages()
+{
+	return m_strErrorMessages;
 }
