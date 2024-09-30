@@ -22,12 +22,16 @@ public:
 	Edit_orificeFreCharacterstics(Ptr(OrificeFREModel) p_pOrificeFREModel,QWidget *parent = nullptr);
 	~Edit_orificeFreCharacterstics();
 	void setupToolBox();
+    QMap<QString, QVector<QString>> myMap; //naveen
+
 
 
 
 private slots:
 	void onOkButtonClicked();    
-	void onValueChanged();       
+	void onValueChanged(); 
+    void on_toolBox_2_currentChanged(int index); //naveen
+
 
 private:
 	Ui::Edit_orificeFreCharactersticsClass ui;
@@ -39,6 +43,7 @@ private:
 	Heat_Transfer* m_heatTransferWidget;
 	Variation* m_variationWidget;
 	Goal_Seeking* m_goalSeekingWidget;
+
 
 
 
@@ -116,14 +121,93 @@ void Edit_orificeFreCharacterstics::setupToolBox()
 }
 
 // Slot to handle when OK button is clicked
-void Edit_orificeFreCharacterstics::onOkButtonClicked()
+void Edit_orificeFreCharacterstics::onOkButtonClicked()  //naveen
 {
-    m_flowCorrelationWidget->setlineeditcurrenttext();
+    for (int var = 0; var < indexbnr.size(); var++) {
+        if(indexbnr.at(var)==1)
+        {
+            FlowArea* flowAreaPtr = dynamic_cast<FlowArea*>(flowareacorr);
 
+            if (flowAreaPtr) {
+                // Successfully casted, now you can call FlowArea-specific methods
+                QString data = flowAreaPtr->getdata();
+                flowAreaPtr->ui->lineEdit_5->setText(data);
+                qDebug() << "Flow area data: " << data;
+            } else {
+                // The cast failed, handle the error
+                qDebug() << "Failed to cast QWidget* to FlowArea*";
+            }
+        }
+        if(indexbnr.at(var)==0)
+        {
+            Form* flowcoeefPtr = dynamic_cast<Form*>(flowcorrelation);
+
+            if (flowcoeefPtr) {
+                // Successfully casted, now you can call FlowArea-specific methods
+
+                qDebug()<<"bnnrr  combobox index ::"<<flowcoeefPtr->getComboBoxIndex()<<endl;
+                if(flowcoeefPtr->getComboBoxIndex() == 0  )
+                {
+                            QVector<QString> ingressvet;
+                        ingressvet.clear();
+                        ingressvet<<flowcoeefPtr->getdatalineEdit_1();
+                            myMap["ingress"] = ingressvet;
+
+                 }else if(flowcoeefPtr->getComboBoxIndex() == 1)
+                {
+                        QVector<QString> Egressvet;
+                        Egressvet.clear();
+                    Egressvet<<flowcoeefPtr->getdatalineEdit_1();
+                        myMap["Egress"] = Egressvet;
+
+                }
+                  else if(flowcoeefPtr->getComboBoxIndex() == 2 )
+                 {
+                        QVector<QString> usedInputvet;
+                        usedInputvet.clear();
+                    usedInputvet<<flowcoeefPtr->getdatalineEdit_4();
+                        myMap["usedInput"] = usedInputvet;
+
+                }else if(flowcoeefPtr->getComboBoxIndex() == 3)
+                {
+                        QVector<QString> Huningvet;
+                        Huningvet.clear();
+                    Huningvet<<flowcoeefPtr->getdatalineEdit_1() << flowcoeefPtr->getdatalineEdit_2() << flowcoeefPtr->getdatalineEdit_3();
+                        myMap["Huning"] = Huningvet;
+
+                }else if(flowcoeefPtr->getComboBoxIndex() == 4)
+                {
+                        QVector<QString> Parkervet;
+                        Parkervet.clear();
+                    Parkervet<<flowcoeefPtr->getdatalineEdit_1() << flowcoeefPtr->getdatalineEdit_2() << flowcoeefPtr->getdatalineEdit_3();
+                        myMap["Parker"] = Parkervet;
+
+            }else if(flowcoeefPtr->getComboBoxIndex() == 5)
+                {
+                        QVector<QString> Bindervet;
+                        Bindervet.clear();
+                    Bindervet<<flowcoeefPtr->getdatalineEdit_1() << flowcoeefPtr->getdatalineEdit_2() << flowcoeefPtr->getdatalineEdit_3();
+                        myMap["Binder"] = Bindervet;
+            }
+                qDebug() << "Flow area data: " ;
+            } else {
+                qDebug() << "Failed to cast QWidget* to FlowArea*";
+            }
+        }
+
+    }
+    qDebug()<<"mymap"<<myMap.size() <<":::"<<myMap<<endl;
 }
 
 // Slot to handle when a value in any widget changes
 void Edit_orificeFreCharacterstics::onValueChanged()
 {
     
+}
+void MainWindow::on_toolBox_2_currentChanged(int index) //naveen
+{
+    if (!indexbnr.contains(index)) {
+            indexbnr.append(index);
+        }
+    qDebug()<<"data"<<indexbnr<<endl;
 }
