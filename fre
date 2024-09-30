@@ -1,0 +1,259 @@
+#pragma once
+
+#include <QWidget>
+#include "ui_Flow_Correlation.h"
+#include <QPixmap>
+#include "QDebug"
+
+#include "OrificeFREModel.h"
+
+
+
+class  Flow_Correlation : public QWidget
+{
+	Q_OBJECT
+
+public:
+	Flow_Correlation(Ptr(OrificeFREModel) p_pOrificeFREModel,QWidget* parent = nullptr);
+	~Flow_Correlation();
+
+	enum ComboBoxOption {
+		Ingress = 0,
+		Egress = 1,
+		UserInput = 2,
+		Hunning = 3,
+		ParkerKercher = 4,
+		Binder = 5
+	};
+	void setlineeditcurrenttext();
+
+	Ptr(OrificeFREModel) m_pOrificeFREModel;
+
+
+public slots:
+	// Slot to handle changes in the combo box
+	void setupComboBox();
+	void updatePixmap();
+
+
+private:
+	// Function to show all UI components
+	void showtime();
+
+
+private:
+	Ui::Flow_CorrelationClass ui;
+
+};
+#include "Flow_Correlation.h"
+#include "QDebug"
+
+
+
+Flow_Correlation::Flow_Correlation(Ptr(OrificeFREModel) p_pOrificeFREModel,QWidget* parent)
+    : m_pOrificeFREModel(p_pOrificeFREModel),QWidget(parent)
+{
+    ui.setupUi(this);
+
+    m_pOrificeFREModel = p_pOrificeFREModel;
+
+    ui.comboBox->clear();
+    ui.comboBox->addItem(ORIFICE_CORR_INGRESS);
+    ui.comboBox->addItem(ORIFICE_CORR_EGRESS);
+    ui.comboBox->addItem(ORIFICE_CORR_USER_INPUT);
+    ui.comboBox->addItem(ORIFICE_CORR_HUNING);
+    ui.comboBox->addItem(ORIFICE_CORR_PARKER_KERCHER);
+    ui.comboBox->addItem(ORIFICE_CORR_BINDER);
+
+    // Set default selection to "User Input"
+    ui.comboBox->setCurrentIndex(UserInput);
+
+    connect(ui.comboBox, SIGNAL(activated(int)), this, SLOT(setupComboBox()));
+    connect(ui.comboBox_2, SIGNAL(activated(int)), this, SLOT(updatePixmap()));  // Connect QComboBox_2
+    //connect(ui.pushButton, SIGNAL(click), this, SLOT(updateData()));  // add naveen
+
+    setupComboBox();
+
+
+    // Initialize UI to the default selection
+}
+
+Flow_Correlation::~Flow_Correlation()
+{}
+
+void Flow_Correlation::showtime()
+{
+    ui.label_1->show();
+
+    ui.label_2->show();
+    ui.lineEdit_1->show();
+    ui.label_3->show();
+    ui.label_4->show();
+    ui.label_6->show();
+    ui.lineEdit_2->show();
+    ui.lineEdit_3->show();
+    ui.lineEdit_4->show();
+    ui.label->show();
+    ui.comboBox_2->show();
+    ui.comboBox->show();
+    ui.label->show();
+}
+
+void Flow_Correlation::setupComboBox()
+
+
+{
+    int fre = ui.comboBox->currentIndex();
+
+
+    if (fre == Ingress || fre == Egress) {
+
+        // Handle Ingress and Egress cases
+        showtime();
+        QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Overlap1.bmp");
+        ui.label_4->setPixmap(pixmap);
+        ui.label_1->setText("Tuning \n Factor");
+        ui.label_7->hide();
+        TCollection_AsciiString tuningString = m_pOrificeFREModel->getTuningFactor(); // Tuning is in ASCII String
+        QString qString = QString::fromStdString(tuningString.ToCString()); // Convert to QString
+
+
+        // Directly display the string in the QLineEdit
+        ui.lineEdit_1->setText(qString);
+
+        updatePixmap();
+
+
+
+        //ui.comboBox_2->addItem(" ");
+   //naveen 
+        ui.comboBox_2->clear();
+
+        ui.comboBox_2->addItem(ORIFICE_OPEN_NO_OVERLAP);
+        ui.comboBox_2->addItem(ORIFICE_OPEN_RADIAL_OVERLAP);
+        ui.comboBox_2->addItem(ORIFICE_SINGLE_RADIAL_AXIAL_OVERLAP);
+        ui.comboBox_2->addItem(ORIFICE_DOUBLE_RADIAL_AXIAL_OVERLAP);
+
+
+
+        ui.label_6->show();
+        ui.label_2->hide();
+        ui.label_3->hide();
+        ui.lineEdit_4->hide();
+        ui.lineEdit_2->hide();
+        ui.lineEdit_3->hide();
+    }
+    else if (fre == UserInput) {
+        // Handle User Input case
+        showtime();
+
+        ui.label_1->hide();
+        ui.label_2->hide();
+        ui.lineEdit_1->hide();
+        ui.label_3->hide();
+        ui.label_4->hide();
+        ui.label_6->hide();
+        ui.lineEdit_3->hide();
+        ui.lineEdit_2->hide();
+        //ui.label->hide();
+        ui.comboBox_2->hide();
+
+        TCollection_AsciiString tuningString = m_pOrificeFREModel->getTuningFactor(); // Tuning is in ASCII String
+        QString qString = QString::fromStdString(tuningString.ToCString()); // Convert to QString
+
+        // Directly display the string in the QLineEdit
+        ui.lineEdit_4->setText(qString);
+
+
+    }
+    else if (fre == Hunning || fre == ParkerKercher  ) {
+        // Handle Hunning case
+        showtime();
+
+        QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Beta.bmp");
+
+        TCollection_AsciiString orflength = m_pOrificeFREModel->getOrificeLength();; // Tuning is in ASCII String
+        QString qString1 = QString::fromStdString(orflength.ToCString()); // Convert to QString
+        ui.lineEdit_1->setText(qString1);
+
+
+        TCollection_AsciiString orfradius = m_pOrificeFREModel->getOrificeFilletRadius();; // Tuning is in ASCII String
+        QString qString2 = QString::fromStdString(orfradius.ToCString()); // Convert to QString
+        ui.lineEdit_2->setText(qString2);
+
+
+        TCollection_AsciiString orfBeta = m_pOrificeFREModel->getBeta();; // Tuning is in ASCII String
+        QString qString3 = QString::fromStdString(orfBeta.ToCString()); // Convert to QString
+
+        ui.lineEdit_3->setText(qString3);
+
+        ui.label_7->hide();
+
+        ui.label_4->setPixmap(pixmap);
+        ui.label_1->setText("Orifice \n Length \n  (in)");
+        ui.label_2->setText("Orifice \nFillet Radius \n   (in)");
+        ui.label_3->setText("BETA");
+        ui.lineEdit_4->hide();
+        //ui.label->hide();
+        ui.comboBox_2->hide();
+        ui.label_6->hide();
+    }
+    else if (fre == Binder)
+{
+        // Handle Parker & Kercher and Binder cases
+        showtime();
+
+        QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Beta.bmp");
+        ui.label_4->setPixmap(pixmap);
+        ui.label_1->setText("Orifice \n Length \n  (in)");
+        ui.label_2->setText("Chamfer \nDepth (in)");
+        ui.label_3->setText("BETA");
+        ui.lineEdit_4->hide();
+        //ui.label->hide();
+        ui.label_6->hide();
+        ui.comboBox_2->hide();
+        ui.label_7->hide();
+
+
+
+        TCollection_AsciiString asciiString = m_pOrificeFREModel->getOrificeLength();
+
+        // Convert TCollection_AsciiString to QString for display
+        QString qString = QString::fromStdString(asciiString.ToCString());
+
+        // Display the original string in lineEdit_1
+        ui.lineEdit_1->setText(qString);  // Display the string description
+    }
+}
+
+void Flow_Correlation::setlineeditcurrenttext()
+{
+    QString b = ui.lineEdit_1->text();
+    ui.lineEdit_1->setText(b);//pran
+
+}
+
+void Flow_Correlation::updatePixmap()
+{
+    // Get the current index of comboBox_2 and update the pixmap accordingly
+    int comboIndex = ui.comboBox_2->currentIndex();
+
+    if (comboIndex == 0) {
+        QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Overlap1.bmp");
+        ui.label_4->setPixmap(pixmap);
+    }
+    else if (comboIndex == 1) {
+        QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Overlap2.bmp");
+        ui.label_4->setPixmap(pixmap);
+    }
+    else if (comboIndex == 2) {
+        QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Overlap3.bmp");
+        ui.label_4->setPixmap(pixmap);
+    }
+    else if (comboIndex == 3) {
+        QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Overlap4.bmp");
+        ui.label_4->setPixmap(pixmap);
+    }
+}now say  
+
+
