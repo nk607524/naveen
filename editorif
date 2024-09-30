@@ -23,6 +23,8 @@ public:
 	~Edit_orificeFreCharacterstics();
 	void setupToolBox();
     QMap<QString, QVector<QString>> myMap; //naveen
+     QVector<int>indexbnr;
+
 
 
 
