@@ -1,0 +1,129 @@
+#pragma once
+
+#include <QWidget>
+#include "ui_Edit_orificeFreCharacterstics.h"
+#include <QToolBox>
+#include <QWidget>
+#include <QtWidgets>
+#include <QMainWindow>
+#include "Flow_Area.h"
+#include "Flow_Correlation.h"
+#include "Heat_Transfer.h"
+#include "Variation.h"
+#include "Goal_Seeking.h"
+#include <QDebug>
+#include "OrificeFREModel.h"
+
+class Edit_orificeFreCharacterstics : public QWidget
+{
+	Q_OBJECT
+
+public:
+	Edit_orificeFreCharacterstics(Ptr(OrificeFREModel) p_pOrificeFREModel,QWidget *parent = nullptr);
+	~Edit_orificeFreCharacterstics();
+	void setupToolBox();
+
+
+
+private slots:
+	void onOkButtonClicked();    
+	void onValueChanged();       
+
+private:
+	Ui::Edit_orificeFreCharactersticsClass ui;
+
+	Ptr(OrificeFREModel) m_pOrificeFREModel;
+
+	Flow_Area* m_flowAreaWidget;
+	Flow_Correlation* m_flowCorrelationWidget;
+	Heat_Transfer* m_heatTransferWidget;
+	Variation* m_variationWidget;
+	Goal_Seeking* m_goalSeekingWidget;
+
+
+
+
+
+};
+#include "Edit_orificeFreCharacterstics.h"
+
+
+Edit_orificeFreCharacterstics::Edit_orificeFreCharacterstics(Ptr(OrificeFREModel) p_pOrificeFREModel,QWidget *parent)
+	: m_pOrificeFREModel(p_pOrificeFREModel),QWidget(parent)
+{
+	ui.setupUi(this);
+    setupToolBox();
+
+
+
+     m_flowAreaWidget = new Flow_Area(this->m_pOrificeFREModel);
+    //flowAreaWidget->setMode(Flow_Area::Tube);
+
+
+
+    //QWidget* OrificecrossFlowWidget = new OrificeCrossFlow_FlowCoeff();
+
+     m_flowCorrelationWidget = new Flow_Correlation(this->m_pOrificeFREModel);
+
+
+     m_heatTransferWidget = new Heat_Transfer();
+     m_variationWidget = new Variation();
+     m_goalSeekingWidget = new Goal_Seeking();
+
+     connect(ui.pushButton, &QPushButton::clicked, this, &Edit_orificeFreCharacterstics::onOkButtonClicked);
+
+
+
+
+}
+
+Edit_orificeFreCharacterstics::~Edit_orificeFreCharacterstics()
+{}
+
+void Edit_orificeFreCharacterstics::setupToolBox()
+{
+
+
+
+    //Flow_Area* flowAreaWidget = new Flow_Area(this->m_pOrificeFREModel);
+    ////flowAreaWidget->setMode(Flow_Area::Tube);
+
+
+
+    ////QWidget* OrificecrossFlowWidget = new OrificeCrossFlow_FlowCoeff();
+    //
+    //Flow_Correlation* flowcoeffWidget = new Flow_Correlation(this->m_pOrificeFREModel);
+  
+
+    //QWidget* heatTransferWidget = new Heat_Transfer();
+    //QWidget* variationWidget = new Variation();
+    //QWidget* goalSeekingWidget = new Goal_Seeking();
+
+
+    ui.toolBox->insertItem(0, m_flowAreaWidget, "Flow Area");
+
+    ui.toolBox->insertItem(1, m_flowCorrelationWidget, "flowcoeff-Cf");
+
+    ui.toolBox->insertItem(2, m_heatTransferWidget, "Heat Transfer");
+    ui.toolBox->insertItem(3, m_variationWidget, "Variation");
+    ui.toolBox->insertItem(4, m_goalSeekingWidget, "Goal Seeking");
+
+
+    QWidget* wid = ui.toolBox->widget(5);
+    ui.toolBox->removeItem(5);
+    delete wid;
+    // Connect more widgets as necessary
+}
+
+// Slot to handle when OK button is clicked
+void Edit_orificeFreCharacterstics::onOkButtonClicked()
+{
+    m_flowCorrelationWidget->setlineeditcurrenttext();
+
+}
+
+// Slot to handle when a value in any widget changes
+void Edit_orificeFreCharacterstics::onValueChanged()
+{
+    
+}
