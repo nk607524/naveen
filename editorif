@@ -142,7 +142,7 @@ void Edit_orificeFreCharacterstics::onOkButtonClicked()  //naveen
         }
         if(indexbnr.at(var)==0)
         {
-            Form* flowcoeefPtr = dynamic_cast<Form*>(flowcoeff-Cf); //naveen
+            Flow_Correlation* flowcoeefPtr = dynamic_cast<Flow_Correlation*>(flowcoeff-Cf); //naveen
 
             if (flowcoeefPtr) {
                 // Successfully casted, now you can call FlowArea-specific methods
