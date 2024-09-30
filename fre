@@ -79,6 +79,11 @@ Flow_Correlation::Flow_Correlation(Ptr(OrificeFREModel) p_pOrificeFREModel,QWidg
     connect(ui.comboBox_2, SIGNAL(activated(int)), this, SLOT(updatePixmap()));  // Connect QComboBox_2
     //connect(ui.pushButton, SIGNAL(click), this, SLOT(updateData()));  // add naveen
 
+ connect(ui->lineEdit_1,SIGNAL(editingFinished()),this,SLOT(getdatalineEdit_1()));
+      connect(ui->lineEdit_2,SIGNAL(editingFinished()),this,SLOT(getdatalineEdit_2()));
+            connect(ui->lineEdit_3,SIGNAL(editingFinished()),this,SLOT(getdatalineEdit_3()));
+            connect(ui->lineEdit_4,SIGNAL(editingFinished()),this,SLOT(getdatalineEdit_4()));
+
     setupComboBox();
 
 
