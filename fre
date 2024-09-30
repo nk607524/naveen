@@ -16,6 +16,8 @@ class  Flow_Correlation : public QWidget
 public:
 	Flow_Correlation(Ptr(OrificeFREModel) p_pOrificeFREModel,QWidget* parent = nullptr);
 	~Flow_Correlation();
+void updateData(); //naveen
+
 
 	enum ComboBoxOption {
 		Ingress = 0,
@@ -34,6 +36,11 @@ public slots:
 	// Slot to handle changes in the combo box
 	void setupComboBox();
 	void updatePixmap();
+QString getdatalineEdit_1();
+    QString getdatalineEdit_2();
+    QString getdatalineEdit_3();
+    QString getdatalineEdit_4();
+    int getComboBoxIndex();
 
 
 private:
@@ -254,6 +261,107 @@ void Flow_Correlation::updatePixmap()
         QPixmap pixmap("C:/Dev/VNet_2_0_GUI/res/icons/Overlap4.bmp");
         ui.label_4->setPixmap(pixmap);
     }
-}now say  
+}now say 
+ ///naveen
+void Form::updateData()
+{
+    MainWindow *objnaveen = new MainWindow();
+        if(objnaveen->myMap.size() > 0)
+        {
+            if(bnr == 0)
+            {
+               QString key = "ingress";
+               if (objnaveen->myMap.contains(key)) {
+                   QVector<QString> values = objnaveen->myMap.value(key);
+                   qDebug() << "Values for key" << key << ":" << values;
+
+                 ui->lineEdit_1->setText(values.at(0));
+               }
+            }else if(bnr =1)
+            {
+                   QString key = "Egress";
+                   if (objnaveen->myMap.contains(key)) {
+                       QVector<QString> values = objnaveen->myMap.value(key);
+                       qDebug() << "Values for key" << key << ":" << values;
+
+                     ui->lineEdit_1->setText(values.at(0));
+                   }
+            }else if(bnr =2)
+            {
+                   QString key = "usedInput";
+                   if (objnaveen->myMap.contains(key)) {
+                       QVector<QString> values = objnaveen->myMap.value(key);
+                       qDebug() << "Values for key" << key << ":" << values;
+
+                     ui->lineEdit_4->setText(values.at(0));
+                   }
+            }else if(bnr =3)
+            {
+                   QString key = "Huning";
+                   if (objnaveen->myMap.contains(key)) {
+                       QVector<QString> values = objnaveen->myMap.value(key);
+                       qDebug() << "Values for key" << key << ":" << values;
+
+                     ui->lineEdit_1->setText(values.at(0));
+                     ui->lineEdit_2->setText(values.at(1));
+                     ui->lineEdit_3->setText(values.at(2));
+                   }
+            }else if(bnr =4)
+            {
+                   QString key = "Parker";
+                   if (objnaveen->myMap.contains(key)) {
+                       QVector<QString> values = objnaveen->myMap.value(key);
+                       qDebug() << "Values for key" << key << ":" << values;
+
+                     ui->lineEdit_1->setText(values.at(0));
+                     ui->lineEdit_2->setText(values.at(1));
+                     ui->lineEdit_3->setText(values.at(2));
+                   }
+            }else if(bnr =5)
+            {
+                   QString key = "Binder";
+                   if (objnaveen->myMap.contains(key)) {
+                       QVector<QString> values = objnaveen->myMap.value(key);
+                       qDebug() << "Values for key" << key << ":" << values;
+
+                     ui->lineEdit_1->setText(values.at(0));
+                     ui->lineEdit_2->setText(values.at(1));
+                     ui->lineEdit_3->setText(values.at(2));
+                   }
+            }
+
+
+        }
+
+}
+
+QString Form::getdatalineEdit_1()
+{
+    return ui->lineEdit_1->text();
+}
+
+QString Form::getdatalineEdit_2()
+{
+    return ui->lineEdit_2->text();
+
+}
+
+QString Form::getdatalineEdit_3()
+{
+    return ui->lineEdit_3->text();
+
+}
+
+QString Form::getdatalineEdit_4()
+{
+    return ui->lineEdit_4->text();
+
+}
+
+int Form::getComboBoxIndex()
+{
+    return bnr;
+}
+
 
 
