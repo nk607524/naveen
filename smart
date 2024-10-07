@@ -1,0 +1,157 @@
+#line 1 "include/BasicMacros.hpp"
+//----------------------------------------------------------------------------//
+//                                                                            //
+//   This material contains, and is a part of a computer software program     //
+//   which is, proprietary and confidential information owned by:             //
+//                  Honeywell Technologies Solution Lab, INC.                 //
+//   The program, including this material, may not be duplicated, disclosed   //
+//   or reproduced in whole or in part for any purpose without the express    //
+//   written authorization of Honeywell.  All authorized                      //
+//   reproductions must be marked with this legend.                           //
+//                                                                            //
+//              © 2006 Honeywell Technologies Solution Lab, Inc.              //
+//              Honeywell Technologies Solution Lab, Incorporated             //
+//                            All rights reserved.                            //
+//                                                                            //
+//----------------------------------------------------------------------------//
+//
+//    MODULE NAME       :   BasicMacros.hpp
+//
+//    DESCRIPTIVE NAME  :   Macro Definitions
+//
+//    MODULE FUNCTION   :   
+//
+//    MODULE AUTHOR     :   Ashesh D Vashi
+//
+//    DATE MODULE WRITTEN:  05/25/2006
+//
+//----------------------------------------------------------------------------
+//
+//
+// History:
+// 25-May-2006   (ASHU)
+//      New module.
+//
+//  Only expand this header file once in each compile.
+#pragma once
+
+#ifndef __BASIC_MACROS_DEFINED__
+#define __BASIC_MACROS_DEFINED__
+
+#ifndef LIBEXPORT
+    #ifdef _WINDOWS
+        #define LIBEXPORT __declspec( dllexport )
+        // For global variables :
+        #define LIBEXPORTEXTERN __declspec( dllexport ) extern
+        #define LIBEXPORTEXTERNC extern "C" __declspec( dllexport )
+        #define LIBIMPORT __declspec( dllimport ) extern
+        #define LIBC extern "C" __declspec( dllimport )
+    #else  /* _WINDOWS */
+        #define LIBEXPORT
+        // For global variables :
+        #define LIBEXPORTEXTERN extern
+        #define LIBEXPORTEXTERNC extern "C"
+        #define LIBIMPORT extern
+        #define LIBIMPORTC extern "C"
+    #  endif  /* _WINDOWS */
+# endif  /* LIBEXPORT */
+
+
+#ifndef Ptr
+#define Ptr(ClassName) Ptr_##ClassName##__
+#endif //Ptr
+
+#ifndef stringer
+#define stringer( x ) #x
+#endif
+
+/************************************************************************/
+/* Taken from OpenCascade
+/************************************************************************/
+#ifndef UndefinedPointerAddress 
+    #if defined (__alpha) || defined(DECOSF1)
+        #define UndefinedPointerAddress ((HFWTObject *)0xfefdfefdfefd0000)
+    #else
+        #define UndefinedPointerAddress ((HFWTObject *)0xfefd0000)
+    #endif// End : __alpha || DESCOSF1
+#endif//UndefinedPointerAddress
+
+
+//////////////////////////////////////////////////////////////////////////
+// To Create Smart Pointer For the class
+//////////////////////////////////////////////////////////////////////////
+#define DEFINE_SMART_PTR(Derived,Base)                                  \
+class Ptr(Base);                                                        \
+class Derived;                                                          \
+class Ptr( Derived) : public Ptr( Base) {                               \
+public:                                                                 \
+    LIBEXPORT Ptr( Derived)():Ptr( Base)() {}                           \
+    LIBEXPORT Ptr( Derived)(const Ptr( Derived)& aPtr)                  \
+        : Ptr( Base)(aPtr) {}                                           \
+    LIBEXPORT Ptr( Derived)(const Derived* anItem)                      \
+        : Ptr( Base)((Base *)anItem) {}                                 \
+    LIBEXPORT Ptr( Derived)& operator=(const Ptr( Derived)& aPtr) {     \
+        if( !aPtr.IsNull())                                             \
+            Assign(aPtr.Access());                                      \
+        else                                                            \
+            Assign( NULL);                                              \
+        return *this;                                                   \
+    }                                                                   \
+    LIBEXPORT Ptr( Derived)& operator=(const Derived* anItem) {         \
+        Assign((HFWTObject *)anItem);                                   \
+        return *this;                                                   \
+    }                                                                   \
+    LIBEXPORT Ptr( Derived)& operator=( Derived* anItem) {              \
+        Assign( (HFWTObject *)anItem);                                  \
+        return *this;                                                   \
+    }                                                                   \
+    LIBEXPORT Derived* operator->()                                     \
+    {                                                                   \
+        try                                                             \
+        {                                                               \
+            return (Derived *)ControlAccess();                          \
+        }                                                               \
+        catch( HFWNullPointerException* pEx)                            \
+        {                                                               \
+            HFWRethrowException( pEx, stringer( Ptr_##Derived##__::operator->), __FILE__, __LINE__);   \
+        }                                                               \
+        return NULL;                                                    \
+    }                                                                   \
+    LIBEXPORT Derived* operator->() const {                             \
+        try                                                             \
+        {                                                               \
+            return (Derived *)ControlAccess();                          \
+        }                                                               \
+        catch( HFWNullPointerException* pEx)                            \
+        {                                                               \
+            HFWRethrowException( pEx, stringer( Ptr_##Derived##__::operator->), __FILE__, __LINE__);   \
+        }                                                               \
+        return NULL;                                                    \
+    }                                                                   \
+    LIBEXPORT ~Ptr(Derived)(){}                                 \
+    LIBEXPORT operator Derived*() const {                                     \
+        try                                                             \
+        {                                                               \
+            return (Derived *)ControlAccess();                          \
+        }                                                               \
+        catch( HFWNullPointerException* pEx)                            \
+        {                                                               \
+            HFWRethrowException( pEx, stringer( Ptr_##Derived##__::operator Derived*), __FILE__, __LINE__);   \
+        }                                                               \
+        return NULL;                                                    \
+    }                                                                   \
+};
+
+class TCollection_AsciiString;
+
+LIBEXPORT TCollection_AsciiString& ReplaceStr( 
+                                   TCollection_AsciiString& pFromStr,
+                                   const TCollection_AsciiString& pOldStr,
+                                   const TCollection_AsciiString& pNewStr
+                                   );
+
+#define     VISUALIZATION_FACTORY    "Visualization"
+#define     CONFIGURATION_FACTORY    "ConfigFileManagement"
+#define     SESSION_MGMT_FACTORY     "SessionManagement"
+
+#endif //_BASIC_MACROS_DEFINED__
