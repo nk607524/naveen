@@ -1,0 +1,365 @@
+#pragma once
+#include "FREModel.h"
+#include "FlowAreaModel.h"
+#include "OPBasedAttributeModel.h"
+#include "TubeFlowResistiveElement.h"
+
+constexpr auto MITER_BEND_CRANE_FLOW = "Crane Flow of Fluids";
+constexpr auto MITER_BEND_USER_INPUT = "User Input";
+
+//Smooth Bend Correlation Matrix											(Default:90)				
+//Correlation				XML/Engg Object			model.wpd/Input			Bend Angle				Total Head Loss
+//Crane Flow of Fluids			0						1					Uses Entrance Loss			(N.A.)
+//User Input					1						0					Uses Entrance Loss		Uses Friction Length
+
+
+class VNET_1_0_EXPORT MiterBendFREModel:public FREModel
+{
+public:
+	MiterBendFREModel(TCollection_AsciiString p_strFREDataID, Ptr(ProjectDataModel) p_pProjectDataModel, Ptr(CVNet_1_0DocController) p_pDocCtrl);
+
+	TCollection_AsciiString getHeadLossDescription();
+	TCollection_AsciiString getCorrelationName();
+	Standard_Integer getCorrelationIntegerForSolver();
+	Standard_Integer getCorrelationIntegerForEnggObj();
+	TCollection_AsciiString getBendAngle();
+	TCollection_AsciiString getTotalHeadLoss();
+
+	void setHeadLossDescription(TCollection_AsciiString p_strDescription);
+	void setCorrelationName(TCollection_AsciiString p_strCorrName);
+	void setCorrelationIntegerForSolverInput(Standard_Integer p_iCorrNumSolver);
+	void setCorrelationIntegerForEnggObj(Standard_Integer p_iCorrNumEnggObj);
+	void setBendAngle(TCollection_AsciiString p_strBendAngle);
+	void setTotalHeadLoss(TCollection_AsciiString p_strHeadLoss);
+
+	//Flow Area Properties
+	TCollection_AsciiString getFlowDescription();
+	TCollection_AsciiString getFlowParam1();
+	TCollection_AsciiString getFlowParam2();
+	en_FlowSectionType		getFlowSectionType();
+	TCollection_AsciiString getFlowQuantity();
+
+	void setFlowDescription(TCollection_AsciiString p_strDescription);
+	void setFlowParam1(TCollection_AsciiString p_strFlowParam1);
+	void setFlowParam2(TCollection_AsciiString p_strFlowParam2);
+	void setFlowSectionType(en_FlowSectionType p_enFlowSectionType);
+	void setFlowQuantity(TCollection_AsciiString p_strQuantity);
+
+	TCollection_AsciiString getArea();
+	TCollection_AsciiString getHyrdraulicDia();
+	TCollection_AsciiString getEquivalentDia();
+	TCollection_AsciiString getWettedPerimeter();
+	TCollection_AsciiString getTotalArea();
+	Standard_Integer		getCSType();
+	TCollection_AsciiString getFCL();
+	TCollection_AsciiString getSCL();
+
+	//Thermal Properties
+	TCollection_AsciiString getThermalDescription();
+	TCollection_AsciiString getThermalAttribType();
+	TCollection_AsciiString getDeltaThermalValue(TCollection_AsciiString p_strOPName);
+	TCollection_AsciiString getDesignOPDeltaThermalValue(TCollection_AsciiString p_strOPName);
+
+	void setThermalDescription(TCollection_AsciiString p_strDescription);
+	void setThermalAttribType(TCollection_AsciiString p_strAttribType);
+	void setDeltaThermalValue(TCollection_AsciiString p_strOPName, TCollection_AsciiString p_strDeltaThermalValue);
+	void setDesignOPDeltaThermalValue(TCollection_AsciiString p_strOPName, TCollection_AsciiString p_strDeltaThermalValue);
+
+	void UpdateEnggObject();
+protected:
+	TCollection_AsciiString m_strHeadLossDescription;
+	Standard_Integer m_iHeadLossCorrelation;
+	Standard_Real m_rBendAngle = 90.0;
+	Standard_Real m_rTotalHeadLoss;
+
+	Ptr(FlowAreaModel) l_pFlowAreaModel;
+	Ptr(OPBasedAttributeModel) l_pDeltaThermalModel;
+
+	Ptr(CTubeFlowResistiveElement) l_miterBendFREEnggObj;
+};
+DEFINE_SMART_PTR(MiterBendFREModel, FREModel)
+
+
+
+#include "stdafx.h"
+#include "MiterBendFREModel.h"
+
+MiterBendFREModel::MiterBendFREModel(TCollection_AsciiString p_strFREDataID, Ptr(ProjectDataModel) p_pProjectDataModel, Ptr(CVNet_1_0DocController) p_pDocCtrl):
+    FREModel(p_strFREDataID, p_pProjectDataModel, p_pDocCtrl)
+{
+    l_miterBendFREEnggObj = new CTubeFlowResistiveElement(p_pDocCtrl, p_strFREDataID);
+
+    setHeadLossDescription(l_miterBendFREEnggObj->GetTubeFricAttribObj()->GetDescription());
+    TCollection_AsciiString l_strCorrNum = l_miterBendFREEnggObj->GetTubeFricAttribObj()->GetFrictionFactorCorr();
+    if (l_strCorrNum.IsIntegerValue())
+    {
+        setCorrelationIntegerForEnggObj(l_strCorrNum.IntegerValue());
+    }
+    else
+    {
+        setCorrelationIntegerForEnggObj(0);
+    }
+    
+    setBendAngle(l_miterBendFREEnggObj->GetTubeFricAttribObj()->GetEntranceLoss());
+    if (getCorrelationIntegerForEnggObj() == 1)
+    {
+        setTotalHeadLoss(l_miterBendFREEnggObj->GetTubeFricAttribObj()->GetFrictionLength());
+    }
+
+    l_pFlowAreaModel = FlowAreaModel::createFlowAreaModel(l_miterBendFREEnggObj->GetTubeOrifGeomObj(), m_enFEType);
+    l_pDeltaThermalModel = OPBasedAttributeModel::createOPBasedAttributeModel(l_miterBendFREEnggObj->GetTubeThAttribObj());
+}
+
+TCollection_AsciiString MiterBendFREModel::getHeadLossDescription()
+{
+    return m_strHeadLossDescription;
+}
+
+TCollection_AsciiString MiterBendFREModel::getCorrelationName()
+{
+    switch (getCorrelationIntegerForEnggObj())
+    {
+        case 0: return TCollection_AsciiString(MITER_BEND_CRANE_FLOW);
+        case 1: return TCollection_AsciiString(MITER_BEND_USER_INPUT);
+    }
+    return TCollection_AsciiString(MITER_BEND_CRANE_FLOW);
+}
+
+Standard_Integer MiterBendFREModel::getCorrelationIntegerForSolver()
+{
+    switch (getCorrelationIntegerForEnggObj())
+    {
+        case 0: return 1;
+        case 1: return 0;
+    }
+    return 1;
+}
+
+Standard_Integer MiterBendFREModel::getCorrelationIntegerForEnggObj()
+{
+    return m_iHeadLossCorrelation;
+}
+
+TCollection_AsciiString MiterBendFREModel::getBendAngle()
+{
+    return TCollection_AsciiString(m_rBendAngle);
+}
+
+TCollection_AsciiString MiterBendFREModel::getTotalHeadLoss()
+{
+    return TCollection_AsciiString(m_rTotalHeadLoss);
+}
+
+void MiterBendFREModel::setHeadLossDescription(TCollection_AsciiString p_strDescription)
+{
+    m_strHeadLossDescription = p_strDescription;
+}
+
+void MiterBendFREModel::setCorrelationName(TCollection_AsciiString p_strCorrName)
+{
+    if (p_strCorrName.IsEqual(TCollection_AsciiString(MITER_BEND_CRANE_FLOW)))
+    {
+        m_iHeadLossCorrelation = 0;
+    }
+    else if (p_strCorrName.IsEqual(TCollection_AsciiString(MITER_BEND_USER_INPUT)))
+    {
+        m_iHeadLossCorrelation = 1;
+    }
+}
+
+void MiterBendFREModel::setCorrelationIntegerForSolverInput(Standard_Integer p_iCorrNumSolver)
+{
+    switch (p_iCorrNumSolver)
+    {
+        case 0: 
+        {
+            m_iHeadLossCorrelation = 1;
+            return;
+        }
+        case 1:
+        {
+            m_iHeadLossCorrelation = 0;
+            return;
+        }
+    }
+}
+
+void MiterBendFREModel::setCorrelationIntegerForEnggObj(Standard_Integer p_iCorrNumEnggObj)
+{
+    switch (p_iCorrNumEnggObj)
+    {
+        case 0:
+        case 1:
+            m_iHeadLossCorrelation = p_iCorrNumEnggObj;
+    }
+}
+
+void MiterBendFREModel::setBendAngle(TCollection_AsciiString p_strBendAngle)
+{
+    if (p_strBendAngle.IsRealValue())
+    {
+        m_rBendAngle = p_strBendAngle.RealValue();
+    }
+}
+
+void MiterBendFREModel::setTotalHeadLoss(TCollection_AsciiString p_strHeadLoss)
+{
+    if (p_strHeadLoss.IsRealValue())
+    {
+        m_rTotalHeadLoss = p_strHeadLoss.RealValue();
+    }
+}
+
+TCollection_AsciiString MiterBendFREModel::getFlowDescription()
+{
+    return l_pFlowAreaModel->GetDescription();
+}
+
+TCollection_AsciiString MiterBendFREModel::getFlowParam1()
+{
+    return l_pFlowAreaModel->GetParameter1();
+}
+
+TCollection_AsciiString MiterBendFREModel::getFlowParam2()
+{
+    return l_pFlowAreaModel->GetParameter2();
+}
+
+en_FlowSectionType MiterBendFREModel::getFlowSectionType()
+{
+    return l_pFlowAreaModel->GetFlowSectionType();
+}
+
+TCollection_AsciiString MiterBendFREModel::getFlowQuantity()
+{
+    return TCollection_AsciiString(l_pFlowAreaModel->GetQuantity());
+}
+
+void MiterBendFREModel::setFlowDescription(TCollection_AsciiString p_strDescription)
+{
+    l_pFlowAreaModel->SetDescription(p_strDescription);
+}
+
+void MiterBendFREModel::setFlowParam1(TCollection_AsciiString p_strFlowParam1)
+{
+    if (p_strFlowParam1.IsIntegerValue())
+    {
+        l_pFlowAreaModel->SetParameter1(p_strFlowParam1.IntegerValue());
+    }
+}
+
+void MiterBendFREModel::setFlowParam2(TCollection_AsciiString p_strFlowParam2)
+{
+    if (p_strFlowParam2.IsIntegerValue())
+    {
+        l_pFlowAreaModel->SetParameter2(p_strFlowParam2.IntegerValue());
+    }
+}
+
+void MiterBendFREModel::setFlowSectionType(en_FlowSectionType p_enFlowSectionType)
+{
+    l_pFlowAreaModel->SetFlowSectionType(p_enFlowSectionType);
+}
+
+void MiterBendFREModel::setFlowQuantity(TCollection_AsciiString p_strQuantity)
+{
+    if (p_strQuantity.IsIntegerValue())
+    {
+        l_pFlowAreaModel->SetQuantity(p_strQuantity.IntegerValue());
+    }
+}
+
+TCollection_AsciiString MiterBendFREModel::getArea()
+{
+    return l_pFlowAreaModel->GetArea();
+}
+
+TCollection_AsciiString MiterBendFREModel::getHyrdraulicDia()
+{
+    return l_pFlowAreaModel->GetHydraulicDia();
+}
+
+TCollection_AsciiString MiterBendFREModel::getEquivalentDia()
+{
+    return l_pFlowAreaModel->GetEquivalentDia();
+}
+
+TCollection_AsciiString MiterBendFREModel::getWettedPerimeter()
+{
+    return l_pFlowAreaModel->GetWettedPerimeter();
+}
+
+TCollection_AsciiString MiterBendFREModel::getTotalArea()
+{
+    return l_pFlowAreaModel->GetTotalArea();
+}
+
+Standard_Integer MiterBendFREModel::getCSType()
+{
+    return l_pFlowAreaModel->GetCSType();
+}
+
+TCollection_AsciiString MiterBendFREModel::getFCL()
+{
+    return l_pFlowAreaModel->GetFCL();
+}
+
+TCollection_AsciiString MiterBendFREModel::getSCL()
+{
+    return l_pFlowAreaModel->GetSCL();
+}
+
+TCollection_AsciiString MiterBendFREModel::getThermalDescription()
+{
+    return l_pDeltaThermalModel->GetDescription();
+}
+
+TCollection_AsciiString MiterBendFREModel::getThermalAttribType()
+{
+    return l_pDeltaThermalModel->GetOPBasedAttributeType();
+}
+
+TCollection_AsciiString MiterBendFREModel::getDeltaThermalValue(TCollection_AsciiString p_strOPName)
+{
+    return l_pDeltaThermalModel->GetAttributeValue(p_strOPName);
+}
+
+TCollection_AsciiString MiterBendFREModel::getDesignOPDeltaThermalValue(TCollection_AsciiString p_strOPName)
+{
+    return l_pDeltaThermalModel->GetAttributeDesignOPValue(p_strOPName);
+}
+
+void MiterBendFREModel::setThermalDescription(TCollection_AsciiString p_strDescription)
+{
+    l_pDeltaThermalModel->SetDescription(p_strDescription);
+}
+
+void MiterBendFREModel::setThermalAttribType(TCollection_AsciiString p_strAttribType)
+{
+    l_pDeltaThermalModel->SetOPBasedAttributeType(p_strAttribType);
+}
+
+void MiterBendFREModel::setDeltaThermalValue(TCollection_AsciiString p_strOPName, TCollection_AsciiString p_strDeltaThermalValue)
+{
+    l_pDeltaThermalModel->SetAttributeValue(p_strOPName, p_strDeltaThermalValue);
+}
+
+void MiterBendFREModel::setDesignOPDeltaThermalValue(TCollection_AsciiString p_strOPName, TCollection_AsciiString p_strDeltaThermalValue)
+{
+    l_pDeltaThermalModel->SetAttributeDesignOPValue(p_strOPName, p_strDeltaThermalValue);
+}
+
+void MiterBendFREModel::UpdateEnggObject()
+{
+    l_miterBendFREEnggObj->GetTubeFricAttribObj()->SetFrictionFactorCorr(TCollection_AsciiString(getCorrelationIntegerForEnggObj()));
+    l_miterBendFREEnggObj->GetTubeFricAttribObj()->SetDescription(m_strHeadLossDescription);
+    l_miterBendFREEnggObj->GetTubeFricAttribObj()->SetEntranceLoss(getBendAngle());
+    if (getCorrelationIntegerForEnggObj() == 1)
+    {
+        l_miterBendFREEnggObj->GetTubeFricAttribObj()->SetFrictionLength(getTotalHeadLoss());
+    }
+
+
+    l_pFlowAreaModel->UpdateEnggObject();
+    l_pDeltaThermalModel->UpdateEnggObject();
+}
