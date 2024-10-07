@@ -1,0 +1,123 @@
+#pragma once
+
+#include <QWidget>
+#include "ui_HeadLoss.h"
+#include "HeadLoss.h"
+#include "MiterBendFREModel.h"
+
+
+
+class HeadLoss : public QWidget
+{
+	Q_OBJECT
+
+public:
+	HeadLoss(Ptr(MiterBendFREModel) p_pOrificeFREModel, QWidget* parent = nullptr);
+	~HeadLoss();
+
+
+public slots:
+	void handleComboBoxChange();
+
+	QString getdatalineEdit_1();
+	QString getdatalineEdit_2();
+	int getComboBoxIndex();
+
+private:
+	Ui::HeadLossClass ui;
+	Ptr(MiterBendFREModel) m_pOrificeFREModel;
+
+	void showCraneFlow();
+	void showUserInput();
+
+};
+
+
+#include "HeadLoss.h"
+
+HeadLoss::HeadLoss(Ptr(MiterBendFREModel) p_pOrificeFREModel, QWidget* parent)
+    : m_pOrificeFREModel(p_pOrificeFREModel), QWidget(parent)
+{
+	ui.setupUi(this);
+    m_pOrificeFREModel = p_pOrificeFREModel;
+
+
+	ui.comboBox->addItem(MITER_BEND_CRANE_FLOW);
+	ui.comboBox->addItem(MITER_BEND_USER_INPUT);
+
+	connect(ui.comboBox, SIGNAL(activated(int)), this, SLOT(handleComboBoxChange()));
+
+
+    connect(ui.lineEdit, SIGNAL(editingFinished()), this, SLOT(getdatalineEdit_1()));
+    connect(ui.lineEdit_2, SIGNAL(editingFinished()), this, SLOT(getdatalineEdit_2()));
+
+
+    handleComboBoxChange(); 
+
+}
+
+HeadLoss::~HeadLoss()
+{}
+
+void HeadLoss::handleComboBoxChange()
+{
+    int index = ui.comboBox->currentIndex();
+    getComboBoxIndex();
+
+    if (index == 0) // Crane Flow
+    {
+        showCraneFlow();
+    }
+    else if (index == 1) // User Input
+    {
+        showUserInput();
+    }
+}
+
+
+void HeadLoss::showCraneFlow()
+{
+    TCollection_AsciiString bendangle = m_pOrificeFREModel->getBendAngle(); 
+    QString qString = QString::fromStdString(bendangle.ToCString());
+
+    ui.lineEdit->setText(qString);
+
+
+    ui.label_2->show();
+    ui.lineEdit->show();
+
+    ui.label_3->hide();
+    ui.lineEdit_2->hide();
+}
+
+void HeadLoss::showUserInput()
+{
+
+    TCollection_AsciiString Headloss = m_pOrificeFREModel->getTotalHeadLoss(); 
+    QString qString = QString::fromStdString(Headloss.ToCString()); // Convert to QString 
+
+    ui.lineEdit_2->setText(qString);
+
+
+    ui.label_2->show();
+    ui.lineEdit->show();
+
+    ui.label_3->show();
+    ui.lineEdit_2->show();
+}
+QString HeadLoss::getdatalineEdit_1()
+{
+    m_pOrificeFREModel->setBendAngle((ui.lineEdit->text()).toStdString().c_str());
+    return ui.lineEdit->text();
+}
+
+QString HeadLoss::getdatalineEdit_2()
+{
+    m_pOrificeFREModel->setTotalHeadLoss((ui.lineEdit_2->text()).toStdString().c_str()); 
+    return ui.lineEdit_2->text();
+}
+int HeadLoss::getComboBoxIndex()
+{
+    return ui.comboBox->currentIndex();
+}
+
