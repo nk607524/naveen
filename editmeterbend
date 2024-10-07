@@ -1,0 +1,152 @@
+#pragma once
+
+#include <QWidget>
+#include "ui_EditMeterBendCharacterstics.h"
+#include <QToolBox>
+#include <QtWidgets>
+#include <QMainWindow>
+//#include "Flow_Area.h"
+//#include "Flow_Correlation.h"
+#include "HeadLoss.h"
+
+#include "Heat_Transfer.h"
+#include "Variation.h"
+#include "Goal_Seeking.h"
+#include "MiterBendFREModel.h"
+
+
+class EditMeterBendCharacterstics : public QWidget
+{
+	Q_OBJECT
+
+public:
+	EditMeterBendCharacterstics(Ptr(MiterBendFREModel) p_pOrificeFREModel, QWidget* parent = nullptr);
+	~EditMeterBendCharacterstics();
+	void setupToolBox();
+
+
+//public slots:
+//	void onOkButtonClicked();
+//	void onCancelButtonClicked();
+//
+	
+private:
+	Ui::EditMeterBendCharactersticsClass ui;
+	Ptr(MiterBendFREModel) m_pOrificeFREModel;
+
+	
+	//Flow_Area* m_flowAreaWidget;
+	HeadLoss* m_headlossWidget;
+	Heat_Transfer* m_heatTransferWidget;
+	Variation* m_variationWidget;
+	Goal_Seeking* m_goalSeekingWidget;
+
+};
+
+
+#include "EditMeterBendCharacterstics.h"
+
+EditMeterBendCharacterstics::EditMeterBendCharacterstics(Ptr(MiterBendFREModel) p_pOrificeFREModel, QWidget* parent)
+    : m_pOrificeFREModel(p_pOrificeFREModel), QWidget(parent)
+{
+
+	ui.setupUi(this);
+
+    m_pOrificeFREModel = p_pOrificeFREModel;
+
+    //m_flowAreaWidget = new Flow_Area(this->m_pOrificeFREModel);
+
+    m_headlossWidget = new HeadLoss(this->m_pOrificeFREModel);
+
+    m_heatTransferWidget = new Heat_Transfer();
+    m_variationWidget = new Variation();
+    m_goalSeekingWidget = new Goal_Seeking();
+
+    setupToolBox();
+
+    //connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(onOkButtonClicked()));
+    ////connect(ui.pushButton, &QPushButton::clicked, this, &Edit_orificeFreCharacterstics::onOkButtonClicked);
+    //connect(ui.pushButton_2, &QPushButton::clicked, this, &EditMeterBendCharacterstics::onCancelButtonClicked);
+
+}
+
+EditMeterBendCharacterstics::~EditMeterBendCharacterstics()
+{}
+
+void EditMeterBendCharacterstics::setupToolBox()
+{
+
+
+    //ui.toolBox->insertItem(0, flowAreaWidget, "Flow Area");
+
+    //ui.toolBox->insertItem(0, m_FlowAreaObj, "Flow Area");
+    //ui.toolBox->insertItem(0, flowAreaWidget, "Flow Area");
+
+    ui.toolBox->insertItem(1, m_headlossWidget, "Head Loss");
+
+    ui.toolBox->insertItem(2, m_heatTransferWidget, "Heat Transfer");
+    ui.toolBox->insertItem(3, m_variationWidget, "Variation");
+    ui.toolBox->insertItem(4, m_goalSeekingWidget, "Goal Seeking");
+
+
+    QWidget* wid = ui.toolBox->widget(5);
+    ui.toolBox->removeItem(5);
+    delete wid;
+
+}
+
+
+//void EditMeterBendCharacterstics::onOkButtonClicked()
+//{
+//
+//    // Update correlation settings first
+//    m_headlossWidget->handleComboBoxChange(); // Ensure correlation settings are applied.
+//
+//    // Get the selected correlation number (index) from the Flow_Correlation widget
+//    int headlosscorrelationIndex = m_headlossWidget->getComboBoxIndex();
+//
+//    // Set the correlation number in the OrificeFREModel
+//    m_pOrificeFREModel->setCorrelationIntegerForEnggObj(headlosscorrelationIndex);
+//    switch (headlosscorrelationIndex)
+//    {
+//    case 0:
+//    {
+//        QString lineEdit_1_value = m_headlossWidget->getdatalineEdit_1();
+//
+//        // Log for debugging
+//        qDebug() << "Correlation Index: " << headlosscorrelationIndex;
+//        qDebug() << "LineEdit 1 Value: " << lineEdit_1_value;
+//
+//        // Update the OrificeFREModel with the new values
+//        m_pOrificeFREModel->setBendAngle(lineEdit_1_value.toStdString().c_str());
+//
+//        // Call the update function
+//        m_pOrificeFREModel->UpdateEnggObject();
+//        break;
+//
+//    }
+//
+//    case 1:
+//    {
+//        QString lineEdit_2_value = m_headlossWidget->getdatalineEdit_1();
+//
+//        m_pOrificeFREModel->setTotalHeadLoss(lineEdit_2_value.toStdString().c_str());
+//
+//        // Call the update function
+//        m_pOrificeFREModel->UpdateEnggObject();
+//        break;
+//
+//    }
+//
+//
+//    }
+//    this->close();
+//}
+//
+//void EditMeterBendCharacterstics::onCancelButtonClicked()
+//{
+//    // Simply close the dialog or do any necessary cleanup
+//
+//    close();
+//}
+
