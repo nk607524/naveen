@@ -1,0 +1,775 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FlowElementsView</class>
+ <widget class="QWidget" name="FlowElementsView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>416</width>
+    <height>983</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Flow Elements</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>414</width>
+        <height>885</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 1px solid black;</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QToolButton" name="toolBtnNodeItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Node                                </string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::DownArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetNodeItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="currentRow">
+          <number>-1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Boundarry Condition Node</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/BCNode.bmp</normaloff>:/AppMainWindow/Resources/BCNode.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Node</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/SecFlowNode.bmp</normaloff>:/AppMainWindow/Resources/SecFlowNode.bmp</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolBtnOrificeItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Orifice Characterstics               </string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::DownArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetOrificeItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>120</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectItems</enum>
+         </property>
+         <property name="selectionRectVisible">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>Static Orifice</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Orif.bmp</normaloff>:/AppMainWindow/Resources/Orif.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Orifice in CrossFlow</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Corif.bmp</normaloff>:/AppMainWindow/Resources/Corif.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Rotating Orifice</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Rorif.bmp</normaloff>:/AppMainWindow/Resources/Rorif.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>TOBI (Orifice with Swirl)</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Tobi.bmp</normaloff>:/AppMainWindow/Resources/Tobi.bmp</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolBtnSealItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Seal                                </string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::DownArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetSealItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>150</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="resizeMode">
+          <enum>QListView::Adjust</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Labyrinth Seal</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/LS.bmp</normaloff>:/AppMainWindow/Resources/LS.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Face seal </string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/FS.bmp</normaloff>:/AppMainWindow/Resources/FS.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Ring Seal </string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/RS.bmp</normaloff>:/AppMainWindow/Resources/RS.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Static Seal</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/SS.bmp</normaloff>:/AppMainWindow/Resources/SS.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Brush Seal</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/BS.bmp</normaloff>:/AppMainWindow/Resources/BS.bmp</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolBtnPumpingItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Pumping</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::DownArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetPumpingItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Solid Body Rotation</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/FV.bmp</normaloff>:/AppMainWindow/Resources/FV.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Disk Cavity Pumping</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/DC.bmp</normaloff>:/AppMainWindow/Resources/DC.bmp</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolBtnTubeItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Tube Properties             </string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::DownArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetTubeItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>120</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Tube</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/tube.bmp</normaloff>:/AppMainWindow/Resources/tube.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Smooth Bend</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Sbnd.bmp</normaloff>:/AppMainWindow/Resources/Sbnd.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Miter Bend</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Mbnd.bmp</normaloff>:/AppMainWindow/Resources/Mbnd.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tubing With Bend</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/TubeBend.bmp</normaloff>:/AppMainWindow/Resources/TubeBend.bmp</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolBtnLoss_RecoveryItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Loss And Recovery</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::DownArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetLoss_RecoveryItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>150</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Abrupt Area Change</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Abrp.bmp</normaloff>:/AppMainWindow/Resources/Abrp.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Gradual Area Change</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Grad.bmp</normaloff>:/AppMainWindow/Resources/Grad.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Dynamic Pressure Recovery</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Dpr.bmp</normaloff>:/AppMainWindow/Resources/Dpr.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Dynamic Head Loss</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Dhl.bmp</normaloff>:/AppMainWindow/Resources/Dhl.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Entrance</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Entr.bmp</normaloff>:/AppMainWindow/Resources/Entr.bmp</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolBtnFunctionItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Function</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::DownArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="listWidgetFunctionItems">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>60</height>
+          </size>
+         </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>AirPin FlowTable</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/Aft.bmp</normaloff>:/AppMainWindow/Resources/Aft.bmp</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Gas FlowTable</string>
+          </property>
+          <property name="icon">
+           <iconset resource="AppMainWindow.qrc">
+            <normaloff>:/AppMainWindow/Resources/FT.bmp</normaloff>:/AppMainWindow/Resources/FT.bmp</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="AppMainWindow.qrc"/>
+ </resources>
+ <connections/>
+</ui>

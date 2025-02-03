@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>qml;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>qrc;rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Translation Files">
+      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
+      <Extensions>ts</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="AppMainWindow.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtUic Include="AppMainWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtMoc Include="AppMainWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClCompile Include="AppMainWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model_MainView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Outputview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CycleManagement_MainView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BCManagement_MainView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AuditManagement_MainView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowModelsView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelDetailsView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Design_OccView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DesignView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowElementsView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DesignToolBarWidgets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="Model_MainView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Outputview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CycleManagement_MainView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="BCManagement_MainView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="AuditManagement_MainView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="FlowModelsView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ModelDetailsView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="DesignView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Design_OccView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="FlowElementsView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="DesignToolBarWidgets.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="Model_MainView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Outputview.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="CycleManagement_MainView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="BCManagement_MainView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="AuditManagement_MainView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="FlowModelsView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ModelDetailsView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="DesignView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="FlowElementsView.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="DesignToolBarWidgets.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GlobalDefinitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VisualNetwork.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StyleSheet.qss">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
