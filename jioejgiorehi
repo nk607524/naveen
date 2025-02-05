@@ -1,0 +1,2819 @@
+#include "PreferencesWindow.h"
+#include <qstandarditemmodel.h>
+#include <QDoubleSpinBox>
+#include <QCheckBox>
+#include <QComboBox>
+#include "qdebug.h"
+#include "CustomSpinBox.h"
+#include "ModelPreference.h"
+#include <QPushButton>
+#include <QPainter>
+#include <QColorDialog>
+#include <memory> 
+//#include "CustomComboBox.h"
+
+//model
+PreferencesWindow::PreferencesWindow(ModelPreference* pref1, QDialog* parent)
+    : QDialog(parent)
+{
+    ui.setupUi(this);
+    //pref = std::make_shared<ModelPreference>(this);
+
+    pref = pref1;
+
+    qDebug() << "------------------" << pref->getTblViewRow2Value();
+
+    SetuptblViewViewModel();
+    SetuptblViewNode();
+    SetuptblViewFlowResistiveElement();
+    SetuptblViewtblViewNumericMethod();
+    setupIntialCondition();
+    setupArrowHead();
+    setuptblViewFont();
+    setupPhantomGraphDisplay();
+    setupFitAllRange();
+    setupWormDiagram();
+    setupAnalysisofVariaton();
+    setupMatchProgramOptions();
+    setupResultPrecision();
+    setupDevloperOptios();
+    setupGoalSeeking();
+    ui.listWidget->setCurrentItem(ui.listWidget->item(0));
+    ui.stackedWidget->setCurrentIndex(5); // Assuming otherItem2 corresponds to index 1
+
+}
+
+PreferencesWindow::~PreferencesWindow()
+{}
+
+void PreferencesWindow::SetuptblViewViewModel()
+{
+    QStandardItemModel* model = new QStandardItemModel(4, 2, this);
+    model->setItem(0, 0, new QStandardItem("Background Color"));
+    model->setItem(1, 0, new QStandardItem("Drawing Color"));
+    model->setItem(2, 0, new QStandardItem("Text Label Offset X"));
+    model->setItem(3, 0, new QStandardItem("Text Label Offset Y"));
+
+    ui.tblViewViewModel->setModel(model);
+
+    qDebug() << "+++++++++++++++++" << pref->getTblViewRow2Value();
+    SetSpinBoxValues(0.2, 10.0, 1, 0.1, ui.tblViewViewModel, 2, pref->m_str_TextLabeloffset_X.toDouble());
+    SetSpinBoxValues(0.2, 10.0, 1, 0.1, ui.tblViewViewModel, 3, pref->m_str_TextLabeloffset_Y.toDouble());
+
+    QColor bgColor = pref->getBackgroundColor(); // Retrieve stored background color
+    QColor drawColor = pref->getDrawingColor(); // Retrieve stored drawing color
+
+    // Create buttons with previously stored colors
+    QPushButton* buttonRow0 = createColorButton(bgColor); // For row 0
+    ui.tblViewViewModel->setIndexWidget(model->index(0, 1), buttonRow0); // Assign to row 0
+
+    QPushButton* buttonRow1 = createColorButton(drawColor); // For row 1
+    ui.tblViewViewModel->setIndexWidget(model->index(1, 1), buttonRow1); // Assign to row 1
+    // Stretch the horizontal header section
+    ui.tblViewViewModel->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    // Resize rows to fit contents
+    ui.tblViewViewModel->resizeRowsToContents();
+    ui.tblViewViewModel->resizeRowsToContents();
+}
+void PreferencesWindow::SetuptblViewNode()
+{
+    // Create a new model with 4 rows and 2 columns
+    QStandardItemModel* model = new QStandardItemModel(4, 2, this);
+
+    // Set the items for the first column of the model
+    model->setItem(0, 0, new QStandardItem("BC Node Size"));
+    model->setItem(1, 0, new QStandardItem("Aero BC Node Size"));
+    model->setItem(2, 0, new QStandardItem("Free Node Size"));
+    model->setItem(3, 0, new QStandardItem("Station Node Size"));
+
+    // Set the model to the table view
+    ui.tblViewNode->setModel(model);
+    SetSpinBoxValues(0.2, 10.0, 1, 0.1, ui.tblViewNode, 0, pref->getBCNodeSize().toDouble());
+    SetSpinBoxValues(0.2, 10.0, 1, 0.1, ui.tblViewNode, 1, pref->getAeroBCNodeSize().toDouble());
+    SetSpinBoxValues(0.2, 10.0, 1, 0.1, ui.tblViewNode, 2, pref->getFreeNodeSize().toDouble());
+    SetSpinBoxValues(0.2, 10.0, 1, 0.1, ui.tblViewNode, 3, pref->getStationNodeSize().toDouble());
+
+    // Create spin boxes and set properties for each node size in the table
+
+    // Stretch the horizontal header to fill the entire width
+    ui.tblViewNode->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+void PreferencesWindow::SetuptblViewFlowResistiveElement()
+{
+    QStandardItemModel* model = new QStandardItemModel(2, 2, this);
+    model->setItem(0, 0, new QStandardItem("FRE Symbol Size"));
+    model->setItem(1, 0, new QStandardItem("FRE Symbol Display"));
+
+    ui.tblViewFlowResistiveElement->setModel(model);
+
+    // Set the values for SpinBox in row 0
+    SetSpinBoxValues(0.002, 0.200, 3, 0.002, ui.tblViewFlowResistiveElement, 0,
+        pref->m_str_FreSymbolSize.toDouble());
+
+    // Set the values for Checkbox in row 1 based on preferences
+    bool checkBoxValue = pref->isCheckboxCheckedResistiveElementRow1();  // Replace with your method
+    SetCheckBoxValues(ui.tblViewFlowResistiveElement, 1, checkBoxValue);
+
+    // Adjust the horizontal header to stretch
+    ui.tblViewFlowResistiveElement->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void PreferencesWindow::SetuptblViewtblViewNumericMethod()
+{
+    QStandardItemModel* model = new QStandardItemModel(11, 2, this);
+    model->setItem(0, 0, new QStandardItem("Matrix Solver"));
+    model->setItem(1, 0, new QStandardItem("Iteration Limit"));
+    model->setItem(2, 0, new QStandardItem("Start Debug Printing On Iteration"));
+    model->setItem(3, 0, new QStandardItem("Pressure Relaxation Factor"));
+    model->setItem(4, 0, new QStandardItem("Reynolds Number  Relaxation Factor"));
+    model->setItem(5, 0, new QStandardItem("Max Flow Discontinuity(PPS * 1000)"));
+    model->setItem(6, 0, new QStandardItem("Matrix Conditioning Factor"));
+    model->setItem(7, 0, new QStandardItem("Temperature Induced Flow Oscillation"));
+    model->setItem(8, 0, new QStandardItem("Flow Continuity Failure At One or Two Nodes"));
+    model->setItem(9, 0, new QStandardItem("Solution Fails Transition To Compressible Flow Equations"));
+    model->setItem(10, 0, new QStandardItem("Automatic Addition Of Area Change "));
+
+    ui.tblViewNumericMethod->setModel(model);
+
+    QStringList comboItems = { "Newton Raphson", "Trust Region" }; // Define a list of available combo box items
+
+    // Optionally, get a previously saved value from preferences
+    QString savedValue1 = pref->getNumericMethodRow0Value();
+    // If you want to ensure that the combo box can show a saved preference value:
+    if (!savedValue1.isEmpty() && comboItems.contains(savedValue1))
+    {
+        SetComboBoxValues(comboItems, ui.tblViewNumericMethod, 0, savedValue1); // Set the initial value if it exists
+
+    }
+    else {
+        SetComboBoxValues(comboItems, ui.tblViewNumericMethod, 0, "HEEDS"); // Default value
+
+    }
+    // Setting values for SpinBoxes in the Numeric Methods table
+    SetSpinBoxValues(1, 9999, 0, 1, ui.tblViewNumericMethod, 1, pref->getIterationLimit().toDouble());
+    SetSpinBoxValues(1, 9999, 0, 1, ui.tblViewNumericMethod, 2, pref->getDebugPrintingonIteration().toDouble());
+
+    // Setting values for Pressure Relaxation Factor and Reynolds Relaxation Factor
+    SetSpinBoxValues(0.050, 0.500, 3, 0.050, ui.tblViewNumericMethod, 3, pref->getPressureRelaxationFactor().toDouble());
+    SetSpinBoxValues(0.050, 0.500, 3, 0.050, ui.tblViewNumericMethod, 4, pref->getReynoldsRelaxationFactor().toDouble());
+    SetSpinBoxValues(0.050, 0.500, 3, 0.050, ui.tblViewNumericMethod, 5, pref->getMaxFlowDiscontinuity().toDouble());
+    SetSpinBoxValues(1, 100, 0, 10, ui.tblViewNumericMethod, 6, pref->getMatrixFactor().toDouble());
+
+    bool checkBoxValue1 = pref->ischeckboxnumericconditionRow7();
+    SetCheckBoxValues(ui.tblViewNumericMethod, 7, checkBoxValue1);
+    bool checkBoxValue2 = pref->ischeckboxnumericconditionRow8();
+    SetCheckBoxValues(ui.tblViewNumericMethod, 8, checkBoxValue2);
+    bool checkBoxValue3 = pref->ischeckboxnumericconditionRow9();
+    SetCheckBoxValues(ui.tblViewNumericMethod, 9, checkBoxValue3);
+    bool checkBoxValue4 = pref->ischeckboxnumericconditionRow10();
+    SetCheckBoxValues(ui.tblViewNumericMethod, 10, checkBoxValue4);
+
+
+
+    ui.tblViewNumericMethod->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+void PreferencesWindow::setupIntialCondition()
+{
+    QStandardItemModel* model = new QStandardItemModel(3, 2, this);
+    model->setItem(0, 0, new QStandardItem("Apply Intial Condition"));
+    model->setItem(1, 0, new QStandardItem("Use Restart Data"));
+    model->setItem(2, 0, new QStandardItem("Restart Data Model"));
+    ui.tblViewIntialCondition->setModel(model);
+    bool checkBoxValue = pref->isCheckboxCheckedIntialConditionRow0();  // Replace with your method
+    SetCheckBoxValues(ui.tblViewIntialCondition, 0, checkBoxValue);
+    bool checkBoxValue1 = pref->isCheckboxCheckedIntialConditionRow1();  // Replace with your method
+    SetCheckBoxValues(ui.tblViewIntialCondition, 1, checkBoxValue1);
+    QStringList comboItems = { "Proposal_Status Model" };
+    SetComboBoxValues(comboItems, ui.tblViewIntialCondition, 2, "Proposal_Status Model");
+    // Disable the combo box if only one item is present
+    ui.tblViewIntialCondition->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void PreferencesWindow::setupArrowHead()
+{
+    QStandardItemModel* model = new QStandardItemModel(2, 2, this);
+    model->setItem(0, 0, new QStandardItem("Arrow Head Length"));
+    model->setItem(1, 0, new QStandardItem("Arrow Head Angle"));
+    ui.tblViewArrowHead->setModel(model);
+    SetSpinBoxValues(0.002, 0.200, 3, 0.002, ui.tblViewArrowHead, 0, pref->getArrowHeadRow0Value().toDouble());
+    SetSpinBoxValues(0.002, 0.200, 3, 0.002, ui.tblViewArrowHead, 1, pref->getArrowHeadRow1Value().toDouble());
+    ui.tblViewArrowHead->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+
+void PreferencesWindow::setuptblViewFont()
+{
+    QStandardItemModel* model = new  QStandardItemModel(2, 2, this);
+    model->setItem(0, 0, new QStandardItem("Font Height"));
+    model->setItem(1, 0, new QStandardItem("Text Color"));
+    ui.tblViewFont->setModel(model);
+    SetSpinBoxValues(0.2, 10.0, 1, 0.1, ui.tblViewFont, 0, pref->getFontRow0Value().toDouble());
+    QColor fontColor = pref->getFontRow1Value(); // Assuming this returns a QColor directly
+    QPushButton* buttonRow1 = createColorButton(fontColor); // For the Text Color row
+    ui.tblViewFont->setIndexWidget(model->index(1, 1), buttonRow1);
+    ui.tblViewFont->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void PreferencesWindow::setupPhantomGraphDisplay()
+{
+    QStandardItemModel* model = new  QStandardItemModel(1, 2, this);
+    model->setItem(0, 0, new QStandardItem("Phantom Graph Display"));
+    ui.tblViewPhantomGraph->setModel(model);
+    bool checkBoxValue = pref->getCheckboxCheckedPhantomGraphRow0();  // Replace with your method
+    SetCheckBoxValues(ui.tblViewPhantomGraph, 0, checkBoxValue);
+    ui.tblViewPhantomGraph->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void PreferencesWindow::setupFitAllRange()
+{
+    QStandardItemModel* model = new QStandardItemModel(4, 2, this);
+    model->setItem(0, 0, new QStandardItem("Xmin (Axial)"));
+    model->setItem(1, 0, new QStandardItem("Xmax (Axial)"));
+    model->setItem(2, 0, new QStandardItem("Zmin (Radial)"));
+    model->setItem(3, 0, new QStandardItem("Zmax (Radial)"));
+    ui.tblViewFitAllRange->setModel(model);
+    double defaultXmin = -100;
+    double defaultXmax = 100;
+    double defaultZmin = 0;
+    double defaultZmax = 20;
+    // Set spin box values checking for preference values or defaulting
+    SetSpinBoxValues(-1000, 1000, 0, 1, ui.tblViewFitAllRange, 0,
+        pref->getXminAxial().isEmpty() ? defaultXmin : pref->getXminAxial().toDouble());
+    SetSpinBoxValues(-1000, 1000, 0, 1, ui.tblViewFitAllRange, 1,
+        pref->getXmaxAxial().isEmpty() ? defaultXmax : pref->getXmaxAxial().toDouble());
+    SetSpinBoxValues(-100, 100, 0, 1, ui.tblViewFitAllRange, 2,
+        pref->getZminRadial().isEmpty() ? defaultZmin : pref->getZminRadial().toDouble());
+    SetSpinBoxValues(-100, 100, 0, 1, ui.tblViewFitAllRange, 3,
+        pref->getZmaxRadial().isEmpty() ? defaultZmax : pref->getZmaxRadial().toDouble());
+    ui.tblViewFitAllRange->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+void PreferencesWindow::setupWormDiagram()
+{
+    QStandardItemModel* model = new QStandardItemModel(8, 2, this); // Changed to 8 rows now
+    model->setItem(0, 0, new QStandardItem("Line Thickness"));
+    model->setItem(1, 0, new QStandardItem("Line Arrow Width"));
+    model->setItem(2, 0, new QStandardItem("Line Arrow Length"));
+    model->setItem(3, 0, new QStandardItem("Line Color"));
+    model->setItem(4, 0, new QStandardItem("Text Font Size"));
+    model->setItem(5, 0, new QStandardItem("Text Color"));
+    model->setItem(6, 0, new QStandardItem("Text Bold"));
+    model->setItem(7, 0, new QStandardItem("Analysis Value")); // New row for analysis spin box
+    ui.tblViewWormDiagram->setModel(model); // Set the model to the view
+    // Setting values for existing spin boxes
+    SetSpinBoxValues(1.00, 5.00, 0.5, 1, ui.tblViewWormDiagram, 0, pref->getLineThickness().toDouble());
+    SetSpinBoxValues(1.00, 3.00, 0.00, 1, ui.tblViewWormDiagram, 1, pref->getLineArrowWidth().toDouble());
+    SetSpinBoxValues(1.00, 3.00, 0.00, 1, ui.tblViewWormDiagram, 2, pref->getLineArrowLength().toDouble());
+    SetSpinBoxValues(1, 50, 0, 1, ui.tblViewWormDiagram, 4, pref->getFontSize().toDouble());
+    QColor WormDiagColor = pref->getLineColor(); // Assuming this returns a QColor directly
+    QPushButton* buttonRow1 = createColorButton(WormDiagColor); // For the Line Color row
+    ui.tblViewWormDiagram->setIndexWidget(model->index(3, 1), buttonRow1);
+    QColor WormDiagColor1 = pref->getTextColor(); // Assuming this returns a QColor directly
+    QPushButton* buttonRow2 = createColorButton(WormDiagColor1); // For the Text Color row
+    ui.tblViewWormDiagram->setIndexWidget(model->index(5, 1), buttonRow2);
+    bool checkBoxValue1 = pref->isTextBold(); // Retrieve whether text should be bold
+    SetCheckBoxValues(ui.tblViewWormDiagram, 6, checkBoxValue1); // Checkbox for Text Bold
+    bool checkBoxValue = pref->isCheckboxCheckedResistiveElementRow1();  // Replace with your method
+    SetCheckBoxValues(ui.tblViewFlowResistiveElement, 1, checkBoxValue);
+    ui.tblViewWormDiagram->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+void PreferencesWindow::setupAnalysisofVariaton()
+{
+    QStandardItemModel* model = new QStandardItemModel(4, 2, this); // Ensure QPointer/Cleanup management
+    model->setItem(0, 0, new QStandardItem("Number of Simulations"));
+    model->setItem(1, 0, new QStandardItem("Number of OFAT Simulations"));
+    model->setItem(2, 0, new QStandardItem("Random Number Generator Seed"));
+    model->setItem(3, 0, new QStandardItem("Use Random Number Seed"));
+
+    // Validate the creation of the model
+    if (!model) {
+        qDebug() << "Model creation failed!";
+        return;
+    }
+
+    ui.tblViewAnalysisofVariation->setModel(model);
+
+    //Ensure SpinBoxes and CheckBox are created properly
+    SetSpinBoxValues(100, 10000, 0, 100, ui.tblViewAnalysisofVariation, 0, pref->getAnalysisSpinBoxRow0Value().toDouble());
+    SetSpinBoxValues(100, 1000, 0, 100, ui.tblViewAnalysisofVariation, 1, pref->getAnalysisSpinBoxRow1Value().toDouble());
+    ui.tblViewAnalysisofVariation->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    bool randomSeedCheckBoxChecked = pref->isCheckboxCheckedForAnalysisOfVariationRow3(); // Check saved state
+    SetCheckBoxValues(ui.tblViewAnalysisofVariation, 3, randomSeedCheckBoxChecked);
+    QString randomNumber = QString::number(1234567890); // Adjust the range as needed
+    model->setData(model->index(2, 1), randomNumber); // Store in row 2, column 1
+    pref->setAnalysisOfVariationNumberValueRow2(randomNumber); // Save to preferences
+    // Retrieve and set stored random number in the model if checkbox is checked
+    if (randomSeedCheckBoxChecked)
+    {
+        QString storedRandomNumber = pref->getAnalysisOfVariationNumberValueRow2();
+        model->setData(model->index(2, 1), storedRandomNumber); // Update display for the random number
+    }
+    else
+    {
+        model->setData(model->index(2, 1), ""); // Clear if checkbox is not checked
+    }
+
+}
+void PreferencesWindow::setupMatchProgramOptions()
+{
+    QStandardItemModel* model = new QStandardItemModel(1, 2, this); // Ensure QPointer/Cleanup management
+    model->setItem(0, 0, new QStandardItem("Calibration Application"));
+    ui.tblViewMatchProgramOptions->setModel(model);
+    QStringList comboItems = { "HEEDS", "OPTISLANG" }; // Define a list of available combo box items
+    // Optionally, get a previously saved value from preferences
+    QString savedValue = pref->getComboBoxValueChangedMatchProgramRow0();
+    // If you want to ensure that the combo box can show a saved preference value:
+    if (!savedValue.isEmpty() && comboItems.contains(savedValue))
+    {
+        SetComboBoxValues(comboItems, ui.tblViewMatchProgramOptions, 0, savedValue); // Set the initial value if it exists
+
+    }
+    else {
+        SetComboBoxValues(comboItems, ui.tblViewMatchProgramOptions, 0, "HEEDS"); // Default value
+
+    }
+    ui.tblViewMatchProgramOptions->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+}
+void PreferencesWindow::setupResultPrecision()
+{
+    QStandardItemModel* model = new QStandardItemModel(1, 2, this); // Ensure QPointer/Cleanup management
+    model->setItem(0, 0, new QStandardItem("Number of Digits"));
+    ui.tblViewResultPrecision->setModel(model);
+    QStringList comboItems = { "1", "2", "3", "4", "5" }; // Define a list of available combo box items
+    // Optionally, get a previously saved value from preferences
+    QString savedValue = pref->getResultPrecision(); // Fetch saved precision from preferences
+    // Check if the saved precision is a valid selection
+    if (!savedValue.isEmpty() && comboItems.contains(savedValue))
+    {
+        // Set the initial value if it exists
+        SetComboBoxValues(comboItems, ui.tblViewResultPrecision, 0, savedValue);
+    }
+    else
+    {
+        // Default value
+        SetComboBoxValues(comboItems, ui.tblViewResultPrecision, 0, "1"); // Default to "1"
+    }
+
+    ui.tblViewResultPrecision->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+void PreferencesWindow::setupDevloperOptios()
+{
+    QStandardItemModel* model = new QStandardItemModel(1, 2, this); // Ensure QPointer/Cleanup management
+    model->setItem(0, 0, new QStandardItem("Debugging Output"));
+    ui.tblViewDeveloperOptions->setModel(model);
+    bool checkBoxValue1 = pref->isCheckboxCheckedDevloperOptionsRow0();  // Replace with your method
+    SetCheckBoxValues(ui.tblViewDeveloperOptions, 0, checkBoxValue1);
+    ui.tblViewDeveloperOptions->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+void PreferencesWindow::setupGoalSeeking()
+{
+    QStandardItemModel* model = new QStandardItemModel(1, 2, this); // Ensure QPointer/Cleanup management
+    model->setItem(0, 0, new QStandardItem("Relaxation on Input Variables"));
+    model->setItem(0, 1, new QStandardItem("0.8"));
+    ui.tblViewGoalSeekings->setModel(model);
+    ui.tblViewGoalSeekings->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+}
+
+
+void PreferencesWindow::on_tblViewViewModel_clicked(const QModelIndex& index)
+{
+    int row = index.row();
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+    QAbstractItemModel* model = ui.tblViewViewModel->model();
+    QString l_msg;
+    if (row == 2 || row == 3)
+    {
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewViewModel->indexWidget(model->index(row, 1)));
+        if (row == 2)
+        {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Default Label Offset in X Direction. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+        else if (row == 3)
+        {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Default Label Offset in Y Direction. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+    }
+    else if (row == 0)
+    {
+        l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+            "Set BackGround Color";
+
+    }
+    else if (row == 1)
+    {
+        l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+            "Set The Color of drawing";
+
+    }
+
+    updateTextEditor(l_msg);
+}
+
+void PreferencesWindow::on_tblViewNode_clicked(const QModelIndex& index)
+{
+    int row = index.row();
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+    QAbstractItemModel* model = ui.tblViewNode->model();
+    QString l_msg;
+    if (row == 0 || row == 1 || row == 2 || row == 3)
+    {
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNode->indexWidget(model->index(row, 1)));
+        if (row == 0)
+        {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Radius of BCNode Symbol. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+        else if (row == 1)
+        {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Radius of Aero  BC Node Size Symbol. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+        else if (row == 2)
+        {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Radius of  Free Node Size Symbol. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+        else if (row == 3)
+        {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set  Radius of Station Node Size Symbol. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+
+    }
+    updateTextEditor(l_msg);
+}
+
+void PreferencesWindow::on_tblViewFlowResistiveElement_clicked(const QModelIndex& index)
+{
+    // Ensure the clicked index is valid before proceeding
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+
+    int row = index.row(); // Get the row index from the clicked QModelIndex
+    QAbstractItemModel* model = ui.tblViewFlowResistiveElement->model(); // Get the model from the table view
+    QString l_msg; // Initialize message string
+    // Proceed based on the clicked row index
+    if (row == 0) {
+        // Retrieve the corresponding QDoubleSpinBox widget
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFlowResistiveElement->indexWidget(model->index(row, 1)));
+        if (reqSpinBox) {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Radius of Free Node Size Symbol. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+        else {
+            l_msg = "SpinBox not found!";
+        }
+    }
+    else if (row == 1) {
+        // Retrieve the corresponding QCheckBox widget
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewFlowResistiveElement->indexWidget((model->index(row, 1))));
+
+        // Check if the checkbox is valid before accessing its data
+        if (reqCheckBox) {
+            // Use text from model to inform about the checkbox
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Show Flow Resistive Element Symbol");
+        }
+        else {
+            l_msg = "CheckBox not found!";
+        }
+    }
+    else {
+        l_msg = "No relevant action for the selected row.";
+    }
+    updateTextEditor(l_msg);
+}
+void PreferencesWindow::on_tblViewIntialCondition_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return;
+    }
+
+    int row = index.row(); // Get the row index from the clicked QModelIndex
+    QAbstractItemModel* model = ui.tblViewIntialCondition->model(); // Get the model from the table view
+    QString l_msg;
+
+    if (row == 0 || row == 1) {
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewIntialCondition->indexWidget(model->index(row, 1)));
+        if (row == 0) {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Whether To Use Initial Condition Values or Not.");
+        }
+        else if (row == 1) {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Whether To Update Initial Condition Values With Restart Data or Not.");
+        }
+    }
+    else if (row == 2) {
+        QComboBox* reqComboBox = qobject_cast<QComboBox*>(ui.tblViewIntialCondition->indexWidget(model->index(row, 1)));
+        if (reqComboBox) { // Ensure reqComboBox is valid
+            QString selectedValue = reqComboBox->currentText(); // Get the currently selected text from the combo box
+            QString descriptor = model->data(model->index(row, 0)).toString(); // Get text from column 0
+            l_msg = QString("%1\nSelected Model of Restart Data: %2").arg(descriptor).arg(selectedValue); // Construct the message with both texts
+        }
+    }
+    updateTextEditor(l_msg); // Display the message in the text editor
+}
+void PreferencesWindow::on_tblViewArrowHead_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+
+    int row = index.row();
+    QAbstractItemModel* model = ui.tblViewArrowHead->model();
+    QString l_msg;
+
+    if (row == 0 || row == 1) {
+        // Attempt to retrieve the associated QDoubleSpinBox
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewArrowHead->indexWidget(model->index(row, 1)));
+
+        // Check if the SpinBox was fetched successfully
+        if (reqSpinBox) {
+            if (row == 0) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set Length of Arrows. (Min: %1 , Max: %2 )")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            else if (row == 1) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set Angle of Arrows. (Min: %1 , Max: %2 )")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+        }
+        else {
+            // Handle the case where reqSpinBox is not found
+            l_msg = QString("Unable to retrieve spin box widget for row %1.").arg(row);
+        }
+    }
+    else {
+        // Optionally handle clicks on other rows
+        l_msg = QString("Row %1 is not valid for arrow settings.").arg(row);
+    }
+
+    // Update the text editor or log the message
+    updateTextEditor(l_msg);
+}
+void PreferencesWindow::on_tblViewFont_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+
+    int row = index.row(); // Get the row index from the clicked QModelIndex
+    QAbstractItemModel* model = ui.tblViewFont->model(); // Get the model from the table view
+    QString l_msg; // Initialize message string
+
+    // Proceed based on the clicked row index
+    if (row == 0) {
+        // Retrieve the corresponding QDoubleSpinBox widget
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFont->indexWidget(model->index(row, 1)));
+
+        // Ensure the spin box is valid before attempting to access its properties
+        if (reqSpinBox) {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Set Fongt Height. (Min: %1 , Max: %2 )")
+                .arg(reqSpinBox->minimum())
+                .arg(reqSpinBox->maximum());
+        }
+        else {
+            l_msg = "SpinBox not found!";
+        }
+    }
+    updateTextEditor(l_msg);
+
+
+}
+
+void PreferencesWindow::on_tblViewPhantomGraph_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit early if index is not valid
+    }
+    int row = index.row(); // Get the row index from the clicked QModelIndex
+    QAbstractItemModel* model = ui.tblViewPhantomGraph->model(); // Get the model from the table view
+    QString l_msg;
+
+    // Check if the clicked row is 0
+    if (row == 0)
+    {
+        // Fetch the QCheckBox from the corresponding index
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewPhantomGraph->indexWidget(model->index(row, 1)));
+
+        // Check if the checkbox casting was successful
+        if (reqCheckBox)
+        {
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QStringLiteral("Set Whether To Use Initial Condition Values or Not.");
+            // Optionally, you might want to do something with reqCheckBox or l_msg, like showing it in a dialog
+        }
+        else
+        {
+            // Handle the case where the checkbox is not found (optional)
+            l_msg = QString("Checkbox not found for row %1").arg(row);
+        }
+    }
+    updateTextEditor(l_msg);
+
+    // Continue with further handling if necessary
+}
+void PreferencesWindow::on_tblViewAnalysisofVariation_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+
+    int row = index.row();
+    QAbstractItemModel* model = ui.tblViewAnalysisofVariation->model();
+    QString l_msg;
+
+    // Checking if the clicked row is either 0 or 1
+    if (row == 0 || row == 1) {
+        // Attempt to retrieve the associated QDoubleSpinBox
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewAnalysisofVariation->indexWidget(model->index(row, 1)));
+
+        // Check if the SpinBox was fetched successfully
+        if (reqSpinBox) {
+            if (row == 0) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\\n" +
+                    QString("Number of Monte Carlo all-factors-at-once Simulations. (Min: %1 , Max: %2 )")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            else if (row == 1) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\\n" +
+                    QString("Number of 0n-factor-at-a-time Simulations. (Min: %1 , Max: %2 )")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+        }
+        else {
+            // Handle the case where reqSpinBox is not found
+            l_msg = QString("Unable to retrieve spin box widget for row %1.").arg(row);
+        }
+    }
+    else if (row == 2) {
+        // Directly set the value for Random Number Generator Seed
+        int randomSeedValue = 2147483647; // Static value representing the maximum seed
+        int minSeed = -2147483648; // Minimum value for the seed
+        QString descriptor = model->data(model->index(row, 0)).toString(); // Get text from column 0
+
+        l_msg = QString("%1: Random Number Generator Seed: %2 (Integer Range: %3 to %4)")
+            .arg(descriptor)
+            .arg(randomSeedValue)
+            .arg(minSeed)
+            .arg(randomSeedValue);
+    }
+    // Checking for row 3 for QCheckBox
+    else if (row == 3) {
+        // Fetch the QCheckBox from the corresponding index
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewAnalysisofVariation->indexWidget(model->index(row, 1)));
+
+        // Check if the checkbox casting was successful
+        if (reqCheckBox) {
+            l_msg = model->data(model->index(row, 0)).toString() + "\\n" +
+                QString("Use Random Number Seed. Checked: %1")
+                .arg(reqCheckBox->isChecked() ? "Yes" : "No"); // Include state of checkbox
+        }
+        else {
+            // Handle the case where the checkbox is not found (optional)
+            l_msg = QString("Checkbox not found for row %1").arg(row);
+        }
+    }
+    else {
+        // Optionally handle clicks on other rows
+        l_msg = QString("Row %1 is not valid for this action.").arg(row);
+    }
+
+    // Update the text editor or log the message
+    updateTextEditor(l_msg);
+}
+void PreferencesWindow::on_tblViewNumericMethod_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is not valid
+    }
+
+    int row = index.row(); // Get the row index from the clicked QModelIndex
+    QAbstractItemModel* model = ui.tblViewNumericMethod->model(); // Get the model from the table view
+    QString l_msg; // Initialize the message string
+
+    if (row == 0) {
+        QComboBox* reqComboBox = qobject_cast<QComboBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (reqComboBox) { // Ensure reqComboBox is valid
+            QString selectedValue = reqComboBox->currentText(); // Get the currently selected text from the combo box
+            QString descriptor = model->data(model->index(row, 0)).toString(); // Get text from column 0
+            l_msg = QString("%1\nSelect Matrix Solver Method: %2").arg(descriptor).arg(selectedValue); // Construct the message with both texts
+        }
+
+    }
+    else if (row == 1) {
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (spinBox) { // Ensure the spin box is valid
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Iteration Limit. (Current: %1 , Min: %2 , Max: %3)")
+                .arg(spinBox->value()).arg(spinBox->minimum()).arg(spinBox->maximum());
+        }
+    }
+    else if (row == 2) {
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (spinBox) { // Ensure the spin box is valid
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Debug Printing Start Iteration. (Current: %1 , Min: %2 , Max: %3)")
+                .arg(spinBox->value()).arg(spinBox->minimum()).arg(spinBox->maximum());
+        }
+    }
+    else if (row == 3) {
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (spinBox) { // Ensure the spin box is valid
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Pressure Relaxation Factor. (Current: %1 , Min: %2 , Max: %3)")
+                .arg(spinBox->value()).arg(spinBox->minimum()).arg(spinBox->maximum());
+        }
+    }
+    else if (row == 4) {
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (spinBox) { // Ensure the spin box is valid
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Reynolds Number Relaxation Factor. (Current: %1 , Min: %2 , Max: %3)")
+                .arg(spinBox->value()).arg(spinBox->minimum()).arg(spinBox->maximum());
+        }
+    }
+    else if (row == 5) {
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (spinBox) { // Ensure the spin box is valid
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Max Flow Discontinuity. (Current: %1 , Min: %2 , Max: %3)")
+                .arg(spinBox->value()).arg(spinBox->minimum()).arg(spinBox->maximum());
+        }
+    }
+    else if (row == 6) {
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (spinBox) { // Ensure the spin box is valid
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Matrix Conditioning Factor. (Current: %1 , Min: %2 , Max: %3)")
+                .arg(spinBox->value()).arg(spinBox->minimum()).arg(spinBox->maximum());
+        }
+    }
+    else if (row == 7) {
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (reqCheckBox) { // Ensure the check box is valid
+            QString checkedStatus = reqCheckBox->isChecked() ? "Enabled" : "Disabled";
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Temperature Included Flow Oscillation: %1").arg(checkedStatus);
+        }
+    }
+    else if (row == 8) {
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (reqCheckBox) { // Ensure the check box is valid
+            QString checkedStatus = reqCheckBox->isChecked() ? "Enabled" : "Disabled";
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Flow Continuity Failure at One or Two Nodes: %1").arg(checkedStatus);
+        }
+    }
+    else if (row == 9) {
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (reqCheckBox) { // Ensure the check box is valid
+            QString checkedStatus = reqCheckBox->isChecked() ? "Enabled" : "Disabled";
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Transition to Compressible Flow Elements if Solution Fails: %1").arg(checkedStatus);
+        }
+    }
+    else if (row == 10) {
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(model->index(row, 1)));
+        if (reqCheckBox) { // Ensure the check box is valid
+            QString checkedStatus = reqCheckBox->isChecked() ? "Enabled" : "Disabled";
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Automatic Addition Of Area Change: %1").arg(checkedStatus);
+        }
+    }
+
+    updateTextEditor(l_msg); // Display the message in the text editor
+}
+
+void PreferencesWindow::on_tblViewMatchProgramOptions_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is not valid
+    }
+
+    int row = index.row(); // Get the row index from the clicked QModelIndex
+    QAbstractItemModel* model = ui.tblViewMatchProgramOptions->model(); // Get the model from the table view
+    QString l_msg; // Initialize the message string
+
+    if (row == 0) {
+        QComboBox* reqComboBox = qobject_cast<QComboBox*>(ui.tblViewMatchProgramOptions->indexWidget(model->index(row, 1)));
+        if (reqComboBox) { // Ensure reqComboBox is valid
+            QString selectedValue = reqComboBox->currentText(); // Get the currently selected text from the combo box
+            QString descriptor = model->data(model->index(row, 0)).toString(); // Get text from column 0
+            l_msg = QString("%1\nSelect Matrix Solver Method: %2").arg(descriptor).arg(selectedValue); // Construct the message with both texts
+        }
+        updateTextEditor(l_msg); // Display the message in the text editor
+    }
+
+
+}
+
+void PreferencesWindow::on_tblViewGoalSeekings_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+
+    int row = index.row();
+    QString l_msg;
+
+    // Check if row 0 is selected
+    if (row == 0) {
+        l_msg = QString("%Relaxation of Input Variables \nSetting goal seeking input variable to relaxation value."); // Update this message as needed
+    }
+
+    // Optionally handle other rows
+    else {
+        l_msg = QString("Row %1 has been selected.").arg(row);
+    }
+
+    // Update the text editor or log the message
+    updateTextEditor(l_msg);
+}
+
+void PreferencesWindow::on_tblViewFitAllRange_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+
+    int row = index.row();
+    QAbstractItemModel* model = ui.tblViewFitAllRange->model();
+    QString l_msg;
+
+    // Checking if the clicked row is either 0, 1, 2 or 3
+    if (row >= 0 && row <= 3) {
+        // Attempt to retrieve the associated QDoubleSpinBox
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFitAllRange->indexWidget(model->index(row, 1)));
+
+        // Check if the SpinBox was fetched successfully
+        if (reqSpinBox) {
+            if (row == 0) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set minimum range along the axis. (Min: %1, Max: %2) units.")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            else if (row == 1) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set maximum range along the axis. (Min: %1, Max: %2) units.")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            else if (row == 2) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set minimum range along the radius. (Min: %1, Max: %2) units.")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            else if (row == 3) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set maximum range along the radius. (Min: %1, Max: %2) units.")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+
+            // Display the message to the user using a QMessageBox
+        }
+        else {
+            // Handle the case where reqSpinBox is not found
+            l_msg = QString("Unable to retrieve spin box widget for row %1.").arg(row);
+        }
+        updateTextEditor(l_msg);
+
+    }
+}
+
+void PreferencesWindow::on_tblViewResultPrecision_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is not valid
+    }
+
+    int row = index.row(); // Get the row index from the clicked QModelIndex
+    QAbstractItemModel* model = ui.tblViewResultPrecision->model(); // Get the model from the table view
+    QString l_msg; // Initialize the message string
+
+    if (row == 0) {
+        QComboBox* reqComboBox = qobject_cast<QComboBox*>(ui.tblViewResultPrecision->indexWidget(model->index(row, 1)));
+        if (reqComboBox) { // Ensure reqComboBox is valid
+            QString selectedValue = reqComboBox->currentText(); // Get the currently selected text from the combo box
+            QString descriptor = model->data(model->index(row, 0)).toString(); // Get text from column 0
+            l_msg = QString("%1\nSelect the number of digits to shown in result display: %2").arg(descriptor).arg(selectedValue); // Construct the message with both texts
+        }
+        updateTextEditor(l_msg); // Display the message in the text editor
+    }
+
+
+}
+
+void PreferencesWindow::on_tblViewWormDiagram_clicked(const QModelIndex& index)
+{
+    if (!index.isValid()) {
+        return; // Exit if the index is invalid
+    }
+
+    int row = index.row();
+    QAbstractItemModel* model = ui.tblViewWormDiagram->model();
+    QString l_msg;
+
+    // Checking if the clicked row is either 0, 1, 2 or 3
+    if (row >= 0 && row <= 2) {
+        // Attempt to retrieve the associated QDoubleSpinBox
+        QDoubleSpinBox* reqSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(model->index(row, 1)));
+
+        // Check if the SpinBox was fetched successfully
+        if (reqSpinBox) {
+            if (row == 0) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set Thickness of Worm line plots. (Min: %1, Max: %2) units.")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            else if (row == 1) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set Width of Line Arrow Head. (Min: %1, Max: %2) units.")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            else if (row == 2) {
+                l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                    QString("Set Length of Line Arrow Head. (Min: %1, Max: %2) units.")
+                    .arg(reqSpinBox->minimum())
+                    .arg(reqSpinBox->maximum());
+            }
+            // Display the message to the user using a QMessageBox
+        }
+        else {
+            // Handle the case where reqSpinBox is not found
+            l_msg = QString("Unable to retrieve spin box widget for row %1.").arg(row);
+        }
+    }
+    else if (row == 3)
+    {  // New case added for row 3, which is a push button
+        l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+            "Set the Line Color for worm line plots";
+        // Here, you can also trigger a function to open a color selection dialog.
+        // For example: openColorSelectionDialog(); // A hypothetical function
+    }
+    else if (row == 4)
+    {  // New case added for row 3, which is a push button
+        l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+            "Set Text Font Size of Worm Line Plots(Min : 4, Max: 50)";
+        // Here, you can also trigger a function to open a color selection dialog.
+        // For example: openColorSelectionDialog(); // A hypothetical function
+    }
+    else if (row == 5)
+    {  // New case added for row 3, which is a push button
+        l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+            "Set the Text Color for worm line plots";
+        // Here, you can also trigger a function to open a color selection dialog.
+        // For example: openColorSelectionDialog(); // A hypothetical function
+    }
+    else if (row == 6) {
+        QCheckBox* reqCheckBox = qobject_cast<QCheckBox*>(ui.tblViewWormDiagram->indexWidget(model->index(row, 1)));
+        if (reqCheckBox) { // Ensure the check box is valid
+            QString checkedStatus = reqCheckBox->isChecked() ? "Enabled" : "Disabled";
+            l_msg = model->data(model->index(row, 0)).toString() + "\n" +
+                QString("Automatic Addition Of Area Change: %1").arg(checkedStatus);
+        }
+    }
+
+    updateTextEditor(l_msg);
+}
+
+
+
+
+
+
+void PreferencesWindow::updateTextEditor(const QString& message)
+{
+    ui.textEditShow->setPlainText(message); // Set the message as the current text in the editor
+    ui.textEditShow->setReadOnly(true);
+}
+
+
+//QPushButton* PreferencesWindow::createPushButtonWithProperties(QTableView* tableView, int row)
+//
+//{
+//
+//    QPushButton* pushButton = new QPushButton(this);
+//    QModelIndex index = tableView->model()->index(row, 1);
+//
+//
+//    QColor initialColor = (row == 0) ? Qt::white : Qt::black;
+//
+//    pushButton->setProperty("currentColor", initialColor);
+//
+//    drawOnButton(pushButton, initialColor);
+//
+//    connect(pushButton, &QPushButton::clicked, this, [this, pushButton]() {
+//
+//        chooseColor(pushButton);
+//
+//        });
+//
+//    return pushButton;
+//
+//}
+//void PreferencesWindow::drawOnButton(QPushButton* button, const QColor& color)
+//{
+//    QPixmap pixmap(button->size());
+//    pixmap.fill(Qt::transparent); // Start with a transparent background
+//
+//    QPainter painter(&pixmap);
+//    painter.setPen(Qt::black); // Pen color for the rectangle border
+//    painter.setBrush(color); // Brush color for the rectangle fill
+//
+//    // Define rectangle dimensions
+//    int rectWidth = pixmap.width() * 0.4; // 40% of the button width
+//    int rectHeight = pixmap.height() * 0.6; // 60% of the button height
+//
+//    // Calculate position for rectangle to be completely on the left
+//    int x = 0; // Start drawn from left
+//    int y = (pixmap.height() - rectHeight) / 2; // Centered vertically
+//
+//    // Draw the rectangle
+//    painter.drawRect(x, y, rectWidth, rectHeight);
+//
+//    // Prepare the RGB values to display as text adjacent to the rectangle
+//    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
+//
+//    // Set text color
+//    painter.setPen(Qt::black); // Color for the text
+//
+//    // Adjust text position to start right next to the rectangle
+//    int textXPosition = rectWidth + 5; // Start immediately after the rectangle with a small margin
+//    QRect textRect(textXPosition, 0, pixmap.width() - textXPosition, pixmap.height()); // Text area covers remaining width
+//    painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, rgbText); // Draw the text aligned to the left
+//
+//    // Set the pixmap as the button's icon
+//    button->setIcon(QIcon(pixmap));
+//    button->setIconSize(button->size()); // Ensure the icon size matches the button size
+//
+//    // Set the property to store the current color
+//    button->setProperty("currentColor", color);
+//}
+//void PreferencesWindow::chooseColor(QPushButton* button)
+//
+//{
+//
+//    QColor currentColor = button->property("currentColor").value<QColor>();
+//
+//    QColor selectedColor = QColorDialog::getColor(currentColor, this, "Select a Color");
+//
+//    if (selectedColor.isValid()) {
+//
+//        drawOnButton(button, selectedColor);
+//
+//        button->setProperty("currentColor", selectedColor);
+//
+//    }
+//
+//}
+
+
+
+
+
+
+void PreferencesWindow::on_toolButtonView_clicked()
+{
+    if (ui.toolButtonView->isChecked())
+    {
+        ui.tblViewViewModel->show();
+        ui.toolButtonView->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewViewModel->hide();
+        ui.toolButtonView->setArrowType(Qt::ArrowType::RightArrow);
+    }
+
+    updateTextEditor(ui.toolButtonView->text() + "\n" + "Options Related to View");
+
+
+}
+
+void PreferencesWindow::on_toolButtonNode_clicked()
+{
+    if (ui.toolButtonNode->isChecked())
+    {
+        ui.tblViewNode->show();
+        ui.toolButtonNode->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewNode->hide();
+        ui.toolButtonNode->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonNode->text() + "\n" + "Options Related to View");
+}
+
+void PreferencesWindow::on_toolButtonFlowResistiveElement_clicked()
+{
+    if (ui.toolButtonFlowResistiveElement->isChecked())
+    {
+        ui.tblViewFlowResistiveElement->show();
+        ui.toolButtonFlowResistiveElement->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewFlowResistiveElement->hide();
+        ui.toolButtonFlowResistiveElement->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonFlowResistiveElement->text() + "\n" + "Options Related to View");
+}
+
+void PreferencesWindow::on_toolButtonNumericMethod_clicked()
+{
+    if (ui.toolButtonNumericMethod->isChecked())
+    {
+        ui.tblViewNumericMethod->show();
+        ui.toolButtonNumericMethod->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewNumericMethod->hide();
+        ui.toolButtonNumericMethod->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonNumericMethod->text() + "\n" + "Options Related to View");
+}
+
+void PreferencesWindow::on_toolButtonIntialCondition_clicked()
+{
+    if (ui.toolButtonIntialCondition->isChecked())
+    {
+        ui.tblViewIntialCondition->show();
+        ui.toolButtonIntialCondition->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewIntialCondition->hide();
+        ui.toolButtonIntialCondition->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonIntialCondition->text() + "\n" + "Options Related to View");
+}
+
+
+void PreferencesWindow::on_toolButtonMatchProgramOptions_clicked()
+{
+    if (ui.toolButtonMatchProgramOptions->isChecked())
+    {
+        ui.tblViewMatchProgramOptions->show();
+        ui.toolButtonMatchProgramOptions->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewMatchProgramOptions->hide();
+        ui.toolButtonMatchProgramOptions->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonMatchProgramOptions->text() + "\n" + "Options Related to View");
+}
+
+void PreferencesWindow::on_toolButtonArrowHead_clicked()
+{
+    if (ui.toolButtonArrowHead->isChecked())
+    {
+        ui.tblViewArrowHead->show();
+        ui.toolButtonArrowHead->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewArrowHead->hide();
+        ui.toolButtonArrowHead->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonArrowHead->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_toolButtonFont_clicked()
+{
+    if (ui.toolButtonFont->isChecked())
+    {
+        ui.tblViewFont->show();
+        ui.toolButtonFont->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewFont->hide();
+        ui.toolButtonFont->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonFont->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_toolButtonPhantomGraph_clicked()
+{
+    if (ui.toolButtonPhantomGraph->isChecked())
+    {
+        ui.tblViewPhantomGraph->show();
+        ui.toolButtonPhantomGraph->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewPhantomGraph->hide();
+        ui.toolButtonPhantomGraph->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonPhantomGraph->text() + "\n" + "Options Related to View");
+
+
+}
+
+void PreferencesWindow::on_toolButtonFitAllRange_clicked()
+{
+    if (ui.toolButtonFitAllRange->isChecked())
+    {
+        ui.tblViewFitAllRange->show();
+        ui.toolButtonFitAllRange->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewFitAllRange->hide();
+        ui.toolButtonFitAllRange->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonFitAllRange->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_toolButtonWormDiagram_clicked()
+{
+    if (ui.toolButtonWormDiagram->isChecked())
+    {
+        ui.tblViewWormDiagram->show();
+        ui.toolButtonWormDiagram->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewWormDiagram->hide();
+        ui.toolButtonWormDiagram->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonWormDiagram->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_toolButtonResultPrecision_clicked()
+{
+    if (ui.toolButtonResultPrecision->isChecked())
+    {
+        ui.tblViewResultPrecision->show();
+        ui.toolButtonResultPrecision->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewResultPrecision->hide();
+        ui.toolButtonResultPrecision->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonResultPrecision->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_toolButtonDevloperOptions_clicked()
+{
+    if (ui.toolButtonDevloperOptions->isChecked())
+    {
+        ui.tblViewDeveloperOptions->show();
+        ui.toolButtonDevloperOptions->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewDeveloperOptions->hide();
+        ui.toolButtonDevloperOptions->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonDevloperOptions->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_toolButtonAnalysisofVariation_clicked()
+{
+    if (ui.toolButtonAnalysisofVariation->isChecked())
+    {
+        ui.tblViewAnalysisofVariation->show();
+        ui.toolButtonAnalysisofVariation->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewAnalysisofVariation->hide();
+        ui.toolButtonAnalysisofVariation->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonAnalysisofVariation->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_toolButtonGoalSeekings_clicked()
+{
+    if (ui.toolButtonGoalSeekings->isChecked())
+    {
+        ui.tblViewGoalSeekings->show();
+        ui.toolButtonGoalSeekings->setArrowType(Qt::ArrowType::DownArrow);
+    }
+    else
+    {
+        ui.tblViewGoalSeekings->hide();
+        ui.toolButtonGoalSeekings->setArrowType(Qt::ArrowType::RightArrow);
+    }
+    updateTextEditor(ui.toolButtonGoalSeekings->text() + "\n" + "Options Related to View");
+
+}
+
+void PreferencesWindow::on_pushBtnApply_clicked()
+{
+    //auto pref = std::make_shared<ModelPreference>(this);
+
+    // Handling the model for tblViewViewModel
+    QAbstractItemModel* viewModel = ui.tblViewViewModel->model();
+    for (int row = 0; row < 2; ++row) { // Assuming colors are in the first two rows
+        QModelIndex index = ui.tblViewViewModel->model()->index(row, 1);
+        QPushButton* colorButton = qobject_cast<QPushButton*>(ui.tblViewViewModel->indexWidget(index));
+
+        if (colorButton) {
+            QColor currentColor = colorButton->property("currentColor").value<QColor>();
+            if (row == 0) {
+                pref->setBackgroundColor(currentColor); // Store background color
+            }
+            else if (row == 1) {
+                pref->setDrawingColor(currentColor); // Store drawing color
+            }
+        }
+        else {
+            qDebug() << "Button not found in row" << row << "!";
+        }
+    }
+    QList<int> spinBoxRows = { 2, 3 }; // Rows with spin boxes
+    for (int row : spinBoxRows) {
+        QModelIndex index = viewModel->index(row, 1);
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewViewModel->indexWidget(index));
+        if (spinBox) {
+            QString value = QString::number(spinBox->value());
+            qDebug() << "Setting value for row" << row << ":" << value;
+            if (row == 2) {
+                qDebug() << "============" << row;
+                pref->m_str_TextLabeloffset_X = value;
+            }
+            else if (row == 3) {
+                pref->m_str_TextLabeloffset_Y = value;
+            }
+        }
+        else {
+            qDebug() << "SpinBox not found in row" << row << "!";
+        }
+    }
+
+    // Handling the model for tblViewIntialCondition
+    QAbstractItemModel* initialConditionModel = ui.tblViewIntialCondition->model();
+
+    // Checkbox in row 0
+    QModelIndex index0 = initialConditionModel->index(0, 1);
+    QCheckBox* checkBox0 = qobject_cast<QCheckBox*>(ui.tblViewIntialCondition->indexWidget(index0));
+    if (checkBox0) {
+        bool isChecked = checkBox0->isChecked();
+        qDebug() << "Checkbox in row 0 state:" << isChecked;
+        pref->setCheckboxCheckedIntialConditionRow0(isChecked);
+    }
+    else {
+        qDebug() << "Checkbox not found in row 0!";
+    }
+
+    // Checkbox in row 1
+    QModelIndex index1 = initialConditionModel->index(1, 1);
+    QCheckBox* checkBox1 = qobject_cast<QCheckBox*>(ui.tblViewIntialCondition->indexWidget(index1));
+    if (checkBox1) {
+        bool isChecked = checkBox1->isChecked();
+        qDebug() << "Checkbox in row 1 state:" << isChecked;
+        pref->setCheckboxCheckedIntialConditionRow1(isChecked);
+    }
+    else {
+        qDebug() << "Checkbox not found in row 1!";
+    }
+
+    // ComboBox in row 2
+    QModelIndex index2 = initialConditionModel->index(2, 1);
+    QComboBox* comboBox = qobject_cast<QComboBox*>(ui.tblViewIntialCondition->indexWidget(index2));
+    if (comboBox) {
+        QString currentText = comboBox->currentText();
+        qDebug() << "ComboBox in row 2 value:" << currentText;
+        pref->setcomboboxintialConditionRow2(currentText);
+    }
+    else {
+        qDebug() << "ComboBox not found in row 2!";
+    }
+
+    // Handling the model for tblViewFlowResistiveElement
+    QAbstractItemModel* flowModel = ui.tblViewFlowResistiveElement->model();
+
+    // DoubleSpinBox in row 0
+    QModelIndex flowIndex0 = flowModel->index(0, 1); // Get the model index for flow resistive element row
+    QDoubleSpinBox* flowSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFlowResistiveElement->indexWidget(flowIndex0));
+
+    if (flowSpinBox) {
+        // Retrieve flowSpinBox value, convert it to string
+        QString flowValue = QString::number(flowSpinBox->value()); // Convert value to string
+        qDebug() << "Flow resistive element in row 0 value:" << flowValue; // Debug output
+        pref->m_str_FreSymbolSize = flowValue; // Set the value in the pref object as a string
+    }
+    else {
+        // Log debug message if flow spin box is not found
+        qDebug() << "SpinBox not found in flow resistive row 0!";
+    }
+    // Checkbox in row 1
+    QModelIndex flowIndex1 = flowModel->index(1, 1);
+    QCheckBox* flowCheckBox = qobject_cast<QCheckBox*>(ui.tblViewFlowResistiveElement->indexWidget(flowIndex1));
+    if (flowCheckBox) {
+        bool isChecked = flowCheckBox->isChecked();
+        qDebug() << "Flow resistive checkbox in row 1 state:" << isChecked;
+        pref->setCheckboxCheckedResistiveElementRow1(isChecked);
+    }
+    else {
+        qDebug() << "Checkbox not found in flow resistive row 1!";
+    }
+
+    QAbstractItemModel* ArrowHead = ui.tblViewArrowHead->model();
+
+    // DoubleSpinBox in row 0
+    QModelIndex ArrowHeadIndex0 = ArrowHead->index(0, 1); // Get the model index for row 0
+    QDoubleSpinBox* ArrowHeadSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewArrowHead->indexWidget(ArrowHeadIndex0)); // Cast to QDoubleSpinBox
+
+    if (ArrowHeadSpinBox) { // Check if the spin box is found
+        // Retrieve the value from the spin box and convert it to a string
+        QString value = QString::number(ArrowHeadSpinBox->value());
+        qDebug() << "Arrow Head in row 0 value:" << value; // Debug output showing the string value
+        pref->setArrowHeadRow0Value(value); // Set the value in the pref object as a string
+    }
+    else {
+        // Log debug message if spin box is not found
+        qDebug() << "SpinBox not found in Arrow Head row 0!";
+    }
+    QModelIndex ArrowHeadIndex1 = ArrowHead->index(1, 1); // Get the model index for row 1
+    QDoubleSpinBox* ArrowHeadSpinBox2 = qobject_cast<QDoubleSpinBox*>(ui.tblViewArrowHead->indexWidget(ArrowHeadIndex1)); // Cast to QDoubleSpinBox
+
+    if (ArrowHeadSpinBox2) { // Check if the spin box is found
+        // Retrieve the value from the spin box and convert it to a string
+        QString value = QString::number(ArrowHeadSpinBox2->value());
+        qDebug() << "Arrow Head in row 1 value:" << value; // Debug output showing the string value
+        pref->setArrowHeadRow1Value(value); // Set the value in the pref object as a string
+    }
+    else {
+        // Log debug message if spin box is not found
+        qDebug() << "SpinBox not found in Arrow Head row 1!";
+    }
+
+
+    // Handling Font fontModel
+    QAbstractItemModel* fontModel = ui.tblViewFont->model();
+
+    // DoubleSpinBox in row 0
+    QModelIndex fontIndex0 = fontModel->index(0, 1);
+    QDoubleSpinBox* fontSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFont->indexWidget(fontIndex0));
+
+    if (fontSpinBox) {
+        double value = fontSpinBox->value();
+        qDebug() << "Font element in row 0 value:" << value;
+        pref->setFontRow0Value(QString::number(value));
+    }
+    else {
+        qDebug() << "SpinBox not found in Font row 0!";
+    }
+
+    // QPushButton in row 1 for color
+    QModelIndex fontIndex1 = fontModel->index(1, 1); // Accessing the button in row 1, column 1
+    QPushButton* colorButton = qobject_cast<QPushButton*>(ui.tblViewFont->indexWidget(fontIndex1));
+
+    if (colorButton) {
+        QColor currentColor = colorButton->property("currentColor").value<QColor>();
+        pref->setFontRow1Value(currentColor); // Store the color in ModelPreference as QString
+    }
+    else {
+        qDebug() << "Button not found in Font row 1!";
+    }
+    // Handling the model for tblViewPhantomGraph
+    QAbstractItemModel* phantomGraphModel = ui.tblViewPhantomGraph->model(); // Use the correct model for PhantomGraph
+
+    // Checkbox in row 0
+    QModelIndex PhantomGraphindex0 = phantomGraphModel->index(0, 1); // Accessing the correct model
+    QCheckBox* PhantomcheckBox0 = qobject_cast<QCheckBox*>(ui.tblViewPhantomGraph->indexWidget(PhantomGraphindex0));
+    if (PhantomcheckBox0) {
+        bool isChecked = PhantomcheckBox0->isChecked(); // Get the checked state
+        qDebug() << "Checkbox in row 0 state:" << isChecked;
+        pref->setCheckboxCheckedPhantomGraphRow0(isChecked); // Use setter to store the state
+    }
+    else {
+        qDebug() << "Checkbox not found in row 0!";
+    }
+    QAbstractItemModel* nodeModel = ui.tblViewNode->model();
+
+    // Looping through the first set of rows (0 to 3 as previously set)
+    for (int row = 0; row < 4; ++row) {
+        QModelIndex index = nodeModel->index(row, 1); // Assuming spinboxes are in column 1
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNode->indexWidget(index));
+
+        if (spinBox) {
+            // Directly get the value from the spin box and convert it to QString
+            QString value = QString::number(spinBox->value());
+
+            qDebug() << "Node value in row" << row << ":" << value;
+
+            // Store the value as QString based on row index
+            switch (row) {
+            case 0:
+                pref->setBCNodeSize(value); // Store value for BC Node Size as QString
+                break;
+            case 1:
+                pref->setAeroBCNodeSize(value); // Store value for Aero BC Node Size as QString
+                break;
+            case 2:
+                pref->setFreeNodeSize(value); // Store value for Free Node Size as QString
+                break;
+            case 3:
+                pref->setStationNodeSize(value); // Store value for Station Node Size as QString
+                break;
+            }
+        }
+        else {
+            qDebug() << "SpinBox not found in node row" << row << "!";
+        }
+    }
+
+    QAbstractItemModel* analysisModel = ui.tblViewAnalysisofVariation->model();
+    QModelIndex checkBoxIndex = analysisModel->index(3, 1);
+    QCheckBox* randomSeedCheckBox = qobject_cast<QCheckBox*>(ui.tblViewAnalysisofVariation->indexWidget(checkBoxIndex));
+
+    if (randomSeedCheckBox) {
+        bool isChecked = randomSeedCheckBox->isChecked();
+        pref->setCheckboxCheckedForAnalysisOfVariationRow3(isChecked);
+        qDebug() << "Analysis of Variation checkbox state:" << isChecked;
+
+        // If the checkbox is checked, you can also retrieve and save the random number
+        if (isChecked) {
+            QString randomNumber = pref->getAnalysisOfVariationNumberValueRow2(); // Retrieve the stored number
+            pref->setAnalysisOfVariationNumberValueRow2(randomNumber); // Store it safely
+            qDebug() << "Stored Random Number:" << randomNumber;
+        }
+    }
+    else {
+        qDebug() << "Checkbox for Analysis of Variation not found in row 3!";
+    }
+
+    // Retrieve the value from the analysis spin box in row 0
+    QAbstractItemModel* analysisModel0 = ui.tblViewAnalysisofVariation->model();
+    QModelIndex analysisSpinBoxIndex = analysisModel0->index(0, 1);
+    QDoubleSpinBox* analysisSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewAnalysisofVariation->indexWidget(analysisSpinBoxIndex));
+
+    if (analysisSpinBox) {
+        double value = analysisSpinBox->value();
+        qDebug() << "Analysis SpinBox in row 0 value:" << value;
+        pref->setAnalysisSpinBoxRow0Value(QString::number(value));
+    }
+    else {
+        qDebug() << "Analysis SpinBox not found in row 0!";
+    }
+
+    // Retrieve the value from the analysis spin box in row 1
+    QModelIndex analysisSpinBoxIndexRow1 = analysisModel0->index(1, 1); // Assuming spin box is in row 1
+    QDoubleSpinBox* analysisSpinBoxRow1 = qobject_cast<QDoubleSpinBox*>(ui.tblViewAnalysisofVariation->indexWidget(analysisSpinBoxIndexRow1));
+
+    if (analysisSpinBoxRow1) {
+        double valueRow1 = analysisSpinBoxRow1->value(); // Get the value from the spin box
+        qDebug() << "Analysis SpinBox in row 1 value:" << valueRow1; // Debug output showing the value
+        pref->setAnalysisSpinBoxRow1Value(QString::number(valueRow1)); // Use a new setter for row 1
+    }
+    else {
+        qDebug() << "Analysis SpinBox not found in row 1!"; // Log if the spin box isn't found
+    }
+
+    QAbstractItemModel* matchprogram = ui.tblViewMatchProgramOptions->model();
+    // Looping through the first set of rows (0 to 3 as previously set)
+    for (int row = 0; row < 2; ++row) {
+        QModelIndex index = matchprogram->index(row, 1); // Assuming spinboxes are in column 1
+        QComboBox* Cmbx = qobject_cast<QComboBox*>(ui.tblViewMatchProgramOptions->indexWidget(index));
+
+        if (Cmbx)
+        {
+            // Directly get the value from the spin box and convert it to QString
+            QString value = Cmbx->currentText();
+            qDebug() << "Node value in row" << row << ":" << value;
+            pref->setComboBoxValueChangedMatchProgramRow0(value);
+
+
+
+
+        }
+        // Retrieve the model for the fit all range table
+        QAbstractItemModel* model = ui.tblViewFitAllRange->model();
+
+        // Loop through the rows to retrieve values from the QDoubleSpinBox
+        for (int row = 0; row < 4; ++row) {
+            QModelIndex index = model->index(row, 1); // The second column contains our spin boxes
+            QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFitAllRange->indexWidget(index));
+
+            if (spinBox) {
+                double value = spinBox->value(); // Get the value from the spin box
+                QString valueString = QString::number(value); // Convert to QString for storing
+
+                qDebug() << "Value for row" << row << ":" << valueString; // Log the value for confirmation
+
+                // Store the value in the preferences (adjust methods as necessary)
+                switch (row) {
+                case 0:
+                    pref->setXminAxial(valueString);
+                    break;
+                case 1:
+                    pref->setXmaxAxial(valueString);
+                    break;
+                case 2:
+                    pref->setZminRadial(valueString);
+                    break;
+                case 3:
+                    pref->setZmaxRadial(valueString);
+                    break;
+                default:
+                    break;
+                }
+            }
+            else {
+                qDebug() << "SpinBox not found in row" << row << "!";
+            }
+        }
+
+        QAbstractItemModel* resultPrecisionModel = ui.tblViewResultPrecision->model();
+        QModelIndex precisionIndex = resultPrecisionModel->index(0, 1); // The QComboBox is in row 0, column 1
+        QComboBox* precisionComboBox = qobject_cast<QComboBox*>(ui.tblViewResultPrecision->indexWidget(precisionIndex));
+
+        if (precisionComboBox)
+        {
+            QString precisionValue = precisionComboBox->currentText(); // Get the selected number of digits as a QString
+            qDebug() << "Result precision selected:" << precisionValue;
+
+            // Assuming you have a method setResultPrecision in your ModelPreference to store this value
+            pref->setResultPrecision(precisionValue);
+        }
+        else {
+            qDebug() << "Precision ComboBox not found!";
+        }
+
+        QAbstractItemModel* wormDiagramModel = ui.tblViewWormDiagram->model();
+
+        // Retrieve the value from the analysis spin box in row 0
+        QModelIndex indexRow0 = wormDiagramModel->index(0, 1); // The second column contains our spin boxes
+        QDoubleSpinBox* wormDiagramSpinBoxRow0 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow0));
+
+        if (wormDiagramSpinBoxRow0) {
+            double valueRow0 = wormDiagramSpinBoxRow0->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 0 value:" << valueRow0; // Debug output showing the value
+            pref->setLineThickness(QString::number(valueRow0)); // Set line thickness
+        }
+        else {
+            qDebug() << "Worm Diagram SpinBox not found in row 0!"; // Log if the spin box isn't found
+        }
+
+        // Retrieve the value from the analysis spin box in row 1
+        QModelIndex indexRow1 = wormDiagramModel->index(1, 1); // Assuming spin box is in row 1
+        QDoubleSpinBox* wormDiagramSpinBoxRow1 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow1));
+
+        if (wormDiagramSpinBoxRow1) {
+            double valueRow1 = wormDiagramSpinBoxRow1->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 1 value:" << valueRow1; // Debug output showing the value
+            pref->setLineArrowWidth(QString::number(valueRow1)); // Use a new setter for row 1
+        }
+        else {
+            qDebug() << "Worm Diagram SpinBox not found in row 1!"; // Log if the spin box isn't found
+        }
+
+        QModelIndex indexRow2 = wormDiagramModel->index(2, 1); // Assuming spin box is in row 1
+        QDoubleSpinBox* wormDiagramSpinBoxRow2 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow2));
+
+        if (wormDiagramSpinBoxRow2) {
+            double valueRow2 = wormDiagramSpinBoxRow2->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 1 value:" << valueRow2; // Debug output showing the value
+            pref->setLineArrowLength(QString::number(valueRow2)); // Use a new setter for row 1
+        }
+        else {
+            qDebug() << "Worm Diagram SpinBox not found in row 1!"; // Log if the spin box isn't found
+        }
+
+        QModelIndex indexRow4 = wormDiagramModel->index(4, 1); // Assuming spin box is in row 1
+        QDoubleSpinBox* wormDiagramSpinBoxRow4 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow4));
+
+        if (wormDiagramSpinBoxRow4) {
+            double valueRow4 = wormDiagramSpinBoxRow4->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 1 value:" << valueRow4; // Debug output showing the value
+            pref->setfontsize(QString::number(valueRow4)); // Use a new setter for row 1
+        }
+        else
+        {
+            qDebug() << "Worm Diagram SpinBox not found in row 1!"; // Log if the spin box isn't found
+        }
+        QModelIndex indexRow3 = wormDiagramModel->index(3, 1); // Accessing the button in row 1, column 1
+        QPushButton* colorButton = qobject_cast<QPushButton*>(ui.tblViewWormDiagram->indexWidget(indexRow3));
+
+        if (colorButton) {
+            QColor currentColor = colorButton->property("currentColor").value<QColor>();
+            pref->setLineColor(currentColor); // Store the color in ModelPreference as QString
+        }
+        else {
+            qDebug() << "Button not found in Font row 1!";
+        }
+
+        QModelIndex indexRow5 = wormDiagramModel->index(5, 1); // Accessing the button in row 1, column 1
+        QPushButton* colorButton2 = qobject_cast<QPushButton*>(ui.tblViewWormDiagram->indexWidget(indexRow5));
+
+        if (colorButton2) {
+            QColor currentColor = colorButton2->property("currentColor").value<QColor>();
+            pref->setTextcolor(currentColor); // Store the color in ModelPreference as QString
+        }
+        else {
+            qDebug() << "Button not found in Font row 1!";
+        }
+        QModelIndex index6 = wormDiagramModel->index(6, 1);
+        QCheckBox* checkBox1 = qobject_cast<QCheckBox*>(ui.tblViewWormDiagram->indexWidget(index6));
+        if (checkBox1)
+        {
+            bool isChecked = checkBox1->isChecked();
+            qDebug() << "Checkbox in row 1 state:" << isChecked;
+            pref->setTextBold(isChecked);
+
+        }
+        else
+        {
+            qDebug() << "Checkbox not found in row 1!";
+        }
+
+        QAbstractItemModel* numericMethodsModel = ui.tblViewNumericMethod->model();
+
+        // Retrieve values from QComboBox in the first two rows
+        for (int row = 0; row < 2; ++row) {
+            QModelIndex index = numericMethodsModel->index(row, 1); // Assuming combo boxes are in column 1
+            QComboBox* comboBox = qobject_cast<QComboBox*>(ui.tblViewNumericMethod->indexWidget(index));
+
+            if (comboBox) {
+                QString value = comboBox->currentText();
+                qDebug() << "Node value in Numeric Method row" << row << ":" << value;
+
+                // Use appropriate setting method based on row if needed
+                if (row == 0) {
+                    pref->setComboBoxValueChangedNumericMethodRow0(value);
+                }
+            }
+            else {
+                qDebug() << "ComboBox not found in row" << row << "!";
+            }
+        }
+
+        // Retrieve values from QDoubleSpinBox for rows 1 to 6
+        for (int row = 1; row <= 6; ++row) {
+            QModelIndex spinBoxIndex = numericMethodsModel->index(row, 1); // Assuming spin boxes are in column 1
+            QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(spinBoxIndex));
+
+            if (spinBox) {
+                double value = spinBox->value();
+                qDebug() << "SpinBox in row" << row << "has value:" << value;
+
+                // Using specific setters based on row
+                switch (row) {
+                case 1:
+                    pref->setIterationLimit(QString::number(value));
+                    break;
+                case 2:
+                    pref->setDebugPrintingonIteration(QString::number(value));
+                    break;
+                case 3:
+                    pref->setPressureRelaxationFactor(QString::number(value));
+                    break;
+                case 4:
+                    pref->setReynoldsRelaxationFactor(QString::number(value));
+                    break;
+                case 5:
+                    pref->setMaxFlowDiscontinuity(QString::number(value));
+                    break;
+                case 6:
+                    pref->setMatrixFactor(QString::number(value));
+                    break;
+                }
+            }
+            else {
+                qDebug() << "SpinBox not found in row" << row << "!";
+            }
+        }
+
+        // Retrieve and process checkbox states
+        QModelIndex numericConditionIndex7 = numericMethodsModel->index(7, 1);
+        QCheckBox* numericCheckBox = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex7));
+
+        if (numericCheckBox) {
+            bool isChecked = numericCheckBox->isChecked();
+            qDebug() << "Checkbox in Numeric Method row 7 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow7(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Numeric Method row 7!";
+        }
+
+        // Now handle the checkbox from tblViewIntialCondition
+        QModelIndex numericConditionIndex8 = numericMethodsModel->index(8, 1);
+        QCheckBox* numericCheckBox2 = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex8));
+
+        if (numericCheckBox2) {
+            bool isChecked = numericCheckBox2->isChecked();
+            qDebug() << "Checkbox in Initial Condition row 8 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow8(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Initial Condition row 8!";
+        }
+
+        QModelIndex numericConditionIndex9 = numericMethodsModel->index(9, 1);
+        QCheckBox* numericCheckBox3 = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex9));
+
+        if (numericCheckBox3) {
+            bool isChecked = numericCheckBox3->isChecked();
+            qDebug() << "Checkbox in Initial Condition row 8 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow9(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Initial Condition row 8!";
+        }
+
+        QModelIndex numericConditionIndex10 = numericMethodsModel->index(10, 1);
+        QCheckBox* numericCheckBox4 = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex9));
+
+        if (numericCheckBox4) {
+            bool isChecked = numericCheckBox4->isChecked();
+            qDebug() << "Checkbox in Initial Condition row 8 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow10(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Initial Condition row 8!";
+        }
+
+        QAbstractItemModel* Devloperoptions = ui.tblViewDeveloperOptions->model();
+
+        // Checkbox in row 0
+        QModelIndex index0 = Devloperoptions->index(0, 1);
+        QCheckBox* checkBox0 = qobject_cast<QCheckBox*>(ui.tblViewDeveloperOptions->indexWidget(index0));
+        if (checkBox0) {
+            bool isChecked = checkBox0->isChecked();
+            qDebug() << "Checkbox in row 0 state:" << isChecked;
+            pref->setCheckboxCheckedDevloperOptionsRow0(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in row 0!";
+        }
+
+
+
+
+
+    }
+}
+
+
+
+
+
+void PreferencesWindow::on_pushBtnCancel_clicked()
+{
+    close();
+}
+
+void PreferencesWindow::on_pushBtnOk_clicked()
+{
+    //auto pref = std::make_shared<ModelPreference>(this);
+
+    // Handling the model for tblViewViewModel
+    QAbstractItemModel* viewModel = ui.tblViewViewModel->model();
+    for (int row = 0; row < 2; ++row) { // Assuming colors are in the first two rows
+        QModelIndex index = ui.tblViewViewModel->model()->index(row, 1);
+        QPushButton* colorButton = qobject_cast<QPushButton*>(ui.tblViewViewModel->indexWidget(index));
+
+        if (colorButton) {
+            QColor currentColor = colorButton->property("currentColor").value<QColor>();
+            if (row == 0) {
+                pref->setBackgroundColor(currentColor); // Store background color
+            }
+            else if (row == 1) {
+                pref->setDrawingColor(currentColor); // Store drawing color
+            }
+        }
+        else {
+            qDebug() << "Button not found in row" << row << "!";
+        }
+    }
+    QList<int> spinBoxRows = { 2, 3 }; // Rows with spin boxes
+    for (int row : spinBoxRows) {
+        QModelIndex index = viewModel->index(row, 1);
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewViewModel->indexWidget(index));
+        if (spinBox) {
+            QString value = QString::number(spinBox->value());
+            qDebug() << "Setting value for row" << row << ":" << value;
+            if (row == 2) {
+                qDebug() << "============" << row;
+                pref->m_str_TextLabeloffset_X = value;
+            }
+            else if (row == 3) {
+                pref->m_str_TextLabeloffset_Y = value;
+            }
+        }
+        else {
+            qDebug() << "SpinBox not found in row" << row << "!";
+        }
+    }
+
+    // Handling the model for tblViewIntialCondition
+    QAbstractItemModel* initialConditionModel = ui.tblViewIntialCondition->model();
+
+    // Checkbox in row 0
+    QModelIndex index0 = initialConditionModel->index(0, 1);
+    QCheckBox* checkBox0 = qobject_cast<QCheckBox*>(ui.tblViewIntialCondition->indexWidget(index0));
+    if (checkBox0) {
+        bool isChecked = checkBox0->isChecked();
+        qDebug() << "Checkbox in row 0 state:" << isChecked;
+        pref->setCheckboxCheckedIntialConditionRow0(isChecked);
+    }
+    else {
+        qDebug() << "Checkbox not found in row 0!";
+    }
+
+    // Checkbox in row 1
+    QModelIndex index1 = initialConditionModel->index(1, 1);
+    QCheckBox* checkBox1 = qobject_cast<QCheckBox*>(ui.tblViewIntialCondition->indexWidget(index1));
+    if (checkBox1) {
+        bool isChecked = checkBox1->isChecked();
+        qDebug() << "Checkbox in row 1 state:" << isChecked;
+        pref->setCheckboxCheckedIntialConditionRow1(isChecked);
+    }
+    else {
+        qDebug() << "Checkbox not found in row 1!";
+    }
+
+    // ComboBox in row 2
+    QModelIndex index2 = initialConditionModel->index(2, 1);
+    QComboBox* comboBox = qobject_cast<QComboBox*>(ui.tblViewIntialCondition->indexWidget(index2));
+    if (comboBox) {
+        QString currentText = comboBox->currentText();
+        qDebug() << "ComboBox in row 2 value:" << currentText;
+        pref->setcomboboxintialConditionRow2(currentText);
+    }
+    else {
+        qDebug() << "ComboBox not found in row 2!";
+    }
+
+    // Handling the model for tblViewFlowResistiveElement
+    QAbstractItemModel* flowModel = ui.tblViewFlowResistiveElement->model();
+
+    // DoubleSpinBox in row 0
+    QModelIndex flowIndex0 = flowModel->index(0, 1); // Get the model index for flow resistive element row
+    QDoubleSpinBox* flowSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFlowResistiveElement->indexWidget(flowIndex0));
+
+    if (flowSpinBox) {
+        // Retrieve flowSpinBox value, convert it to string
+        QString flowValue = QString::number(flowSpinBox->value()); // Convert value to string
+        qDebug() << "Flow resistive element in row 0 value:" << flowValue; // Debug output
+        pref->m_str_FreSymbolSize = flowValue; // Set the value in the pref object as a string
+    }
+    else {
+        // Log debug message if flow spin box is not found
+        qDebug() << "SpinBox not found in flow resistive row 0!";
+    }
+    // Checkbox in row 1
+    QModelIndex flowIndex1 = flowModel->index(1, 1);
+    QCheckBox* flowCheckBox = qobject_cast<QCheckBox*>(ui.tblViewFlowResistiveElement->indexWidget(flowIndex1));
+    if (flowCheckBox) {
+        bool isChecked = flowCheckBox->isChecked();
+        qDebug() << "Flow resistive checkbox in row 1 state:" << isChecked;
+        pref->setCheckboxCheckedResistiveElementRow1(isChecked);
+    }
+    else {
+        qDebug() << "Checkbox not found in flow resistive row 1!";
+    }
+
+    QAbstractItemModel* ArrowHead = ui.tblViewArrowHead->model();
+
+    // DoubleSpinBox in row 0
+    QModelIndex ArrowHeadIndex0 = ArrowHead->index(0, 1); // Get the model index for row 0
+    QDoubleSpinBox* ArrowHeadSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewArrowHead->indexWidget(ArrowHeadIndex0)); // Cast to QDoubleSpinBox
+
+    if (ArrowHeadSpinBox) { // Check if the spin box is found
+        // Retrieve the value from the spin box and convert it to a string
+        QString value = QString::number(ArrowHeadSpinBox->value());
+        qDebug() << "Arrow Head in row 0 value:" << value; // Debug output showing the string value
+        pref->setArrowHeadRow0Value(value); // Set the value in the pref object as a string
+    }
+    else {
+        // Log debug message if spin box is not found
+        qDebug() << "SpinBox not found in Arrow Head row 0!";
+    }
+    QModelIndex ArrowHeadIndex1 = ArrowHead->index(1, 1); // Get the model index for row 1
+    QDoubleSpinBox* ArrowHeadSpinBox2 = qobject_cast<QDoubleSpinBox*>(ui.tblViewArrowHead->indexWidget(ArrowHeadIndex1)); // Cast to QDoubleSpinBox
+
+    if (ArrowHeadSpinBox2) { // Check if the spin box is found
+        // Retrieve the value from the spin box and convert it to a string
+        QString value = QString::number(ArrowHeadSpinBox2->value());
+        qDebug() << "Arrow Head in row 1 value:" << value; // Debug output showing the string value
+        pref->setArrowHeadRow1Value(value); // Set the value in the pref object as a string
+    }
+    else {
+        // Log debug message if spin box is not found
+        qDebug() << "SpinBox not found in Arrow Head row 1!";
+    }
+
+
+    // Handling Font fontModel
+    QAbstractItemModel* fontModel = ui.tblViewFont->model();
+
+    // DoubleSpinBox in row 0
+    QModelIndex fontIndex0 = fontModel->index(0, 1);
+    QDoubleSpinBox* fontSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFont->indexWidget(fontIndex0));
+
+    if (fontSpinBox) {
+        double value = fontSpinBox->value();
+        qDebug() << "Font element in row 0 value:" << value;
+        pref->setFontRow0Value(QString::number(value));
+    }
+    else {
+        qDebug() << "SpinBox not found in Font row 0!";
+    }
+
+    // QPushButton in row 1 for color
+    QModelIndex fontIndex1 = fontModel->index(1, 1); // Accessing the button in row 1, column 1
+    QPushButton* colorButton = qobject_cast<QPushButton*>(ui.tblViewFont->indexWidget(fontIndex1));
+
+    if (colorButton) {
+        QColor currentColor = colorButton->property("currentColor").value<QColor>();
+        pref->setFontRow1Value(currentColor); // Store the color in ModelPreference as QString
+    }
+    else {
+        qDebug() << "Button not found in Font row 1!";
+    }
+    // Handling the model for tblViewPhantomGraph
+    QAbstractItemModel* phantomGraphModel = ui.tblViewPhantomGraph->model(); // Use the correct model for PhantomGraph
+
+    // Checkbox in row 0
+    QModelIndex PhantomGraphindex0 = phantomGraphModel->index(0, 1); // Accessing the correct model
+    QCheckBox* PhantomcheckBox0 = qobject_cast<QCheckBox*>(ui.tblViewPhantomGraph->indexWidget(PhantomGraphindex0));
+    if (PhantomcheckBox0) {
+        bool isChecked = PhantomcheckBox0->isChecked(); // Get the checked state
+        qDebug() << "Checkbox in row 0 state:" << isChecked;
+        pref->setCheckboxCheckedPhantomGraphRow0(isChecked); // Use setter to store the state
+    }
+    else {
+        qDebug() << "Checkbox not found in row 0!";
+    }
+    QAbstractItemModel* nodeModel = ui.tblViewNode->model();
+
+    // Looping through the first set of rows (0 to 3 as previously set)
+    for (int row = 0; row < 4; ++row) {
+        QModelIndex index = nodeModel->index(row, 1); // Assuming spinboxes are in column 1
+        QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNode->indexWidget(index));
+
+        if (spinBox) {
+            // Directly get the value from the spin box and convert it to QString
+            QString value = QString::number(spinBox->value());
+
+            qDebug() << "Node value in row" << row << ":" << value;
+
+            // Store the value as QString based on row index
+            switch (row) {
+            case 0:
+                pref->setBCNodeSize(value); // Store value for BC Node Size as QString
+                break;
+            case 1:
+                pref->setAeroBCNodeSize(value); // Store value for Aero BC Node Size as QString
+                break;
+            case 2:
+                pref->setFreeNodeSize(value); // Store value for Free Node Size as QString
+                break;
+            case 3:
+                pref->setStationNodeSize(value); // Store value for Station Node Size as QString
+                break;
+            }
+        }
+        else {
+            qDebug() << "SpinBox not found in node row" << row << "!";
+        }
+    }
+
+    QAbstractItemModel* analysisModel = ui.tblViewAnalysisofVariation->model();
+    QModelIndex checkBoxIndex = analysisModel->index(3, 1);
+    QCheckBox* randomSeedCheckBox = qobject_cast<QCheckBox*>(ui.tblViewAnalysisofVariation->indexWidget(checkBoxIndex));
+
+    if (randomSeedCheckBox) {
+        bool isChecked = randomSeedCheckBox->isChecked();
+        pref->setCheckboxCheckedForAnalysisOfVariationRow3(isChecked);
+        qDebug() << "Analysis of Variation checkbox state:" << isChecked;
+
+        // If the checkbox is checked, you can also retrieve and save the random number
+        if (isChecked) {
+            QString randomNumber = pref->getAnalysisOfVariationNumberValueRow2(); // Retrieve the stored number
+            pref->setAnalysisOfVariationNumberValueRow2(randomNumber); // Store it safely
+            qDebug() << "Stored Random Number:" << randomNumber;
+        }
+    }
+    else {
+        qDebug() << "Checkbox for Analysis of Variation not found in row 3!";
+    }
+
+    // Retrieve the value from the analysis spin box in row 0
+    QAbstractItemModel* analysisModel0 = ui.tblViewAnalysisofVariation->model();
+    QModelIndex analysisSpinBoxIndex = analysisModel0->index(0, 1);
+    QDoubleSpinBox* analysisSpinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewAnalysisofVariation->indexWidget(analysisSpinBoxIndex));
+
+    if (analysisSpinBox) {
+        double value = analysisSpinBox->value();
+        qDebug() << "Analysis SpinBox in row 0 value:" << value;
+        pref->setAnalysisSpinBoxRow0Value(QString::number(value));
+    }
+    else {
+        qDebug() << "Analysis SpinBox not found in row 0!";
+    }
+
+    // Retrieve the value from the analysis spin box in row 1
+    QModelIndex analysisSpinBoxIndexRow1 = analysisModel0->index(1, 1); // Assuming spin box is in row 1
+    QDoubleSpinBox* analysisSpinBoxRow1 = qobject_cast<QDoubleSpinBox*>(ui.tblViewAnalysisofVariation->indexWidget(analysisSpinBoxIndexRow1));
+
+    if (analysisSpinBoxRow1) {
+        double valueRow1 = analysisSpinBoxRow1->value(); // Get the value from the spin box
+        qDebug() << "Analysis SpinBox in row 1 value:" << valueRow1; // Debug output showing the value
+        pref->setAnalysisSpinBoxRow1Value(QString::number(valueRow1)); // Use a new setter for row 1
+    }
+    else {
+        qDebug() << "Analysis SpinBox not found in row 1!"; // Log if the spin box isn't found
+    }
+
+    QAbstractItemModel* matchprogram = ui.tblViewMatchProgramOptions->model();
+    // Looping through the first set of rows (0 to 3 as previously set)
+    for (int row = 0; row < 2; ++row) {
+        QModelIndex index = matchprogram->index(row, 1); // Assuming spinboxes are in column 1
+        QComboBox* Cmbx = qobject_cast<QComboBox*>(ui.tblViewMatchProgramOptions->indexWidget(index));
+
+        if (Cmbx)
+        {
+            // Directly get the value from the spin box and convert it to QString
+            QString value = Cmbx->currentText();
+            qDebug() << "Node value in row" << row << ":" << value;
+            pref->setComboBoxValueChangedMatchProgramRow0(value);
+
+
+
+
+        }
+        // Retrieve the model for the fit all range table
+        QAbstractItemModel* model = ui.tblViewFitAllRange->model();
+
+        // Loop through the rows to retrieve values from the QDoubleSpinBox
+        for (int row = 0; row < 4; ++row) {
+            QModelIndex index = model->index(row, 1); // The second column contains our spin boxes
+            QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewFitAllRange->indexWidget(index));
+
+            if (spinBox) {
+                double value = spinBox->value(); // Get the value from the spin box
+                QString valueString = QString::number(value); // Convert to QString for storing
+
+                qDebug() << "Value for row" << row << ":" << valueString; // Log the value for confirmation
+
+                // Store the value in the preferences (adjust methods as necessary)
+                switch (row) {
+                case 0:
+                    pref->setXminAxial(valueString);
+                    break;
+                case 1:
+                    pref->setXmaxAxial(valueString);
+                    break;
+                case 2:
+                    pref->setZminRadial(valueString);
+                    break;
+                case 3:
+                    pref->setZmaxRadial(valueString);
+                    break;
+                default:
+                    break;
+                }
+            }
+            else {
+                qDebug() << "SpinBox not found in row" << row << "!";
+            }
+        }
+
+        QAbstractItemModel* resultPrecisionModel = ui.tblViewResultPrecision->model();
+        QModelIndex precisionIndex = resultPrecisionModel->index(0, 1); // The QComboBox is in row 0, column 1
+        QComboBox* precisionComboBox = qobject_cast<QComboBox*>(ui.tblViewResultPrecision->indexWidget(precisionIndex));
+
+        if (precisionComboBox)
+        {
+            QString precisionValue = precisionComboBox->currentText(); // Get the selected number of digits as a QString
+            qDebug() << "Result precision selected:" << precisionValue;
+
+            // Assuming you have a method setResultPrecision in your ModelPreference to store this value
+            pref->setResultPrecision(precisionValue);
+        }
+        else {
+            qDebug() << "Precision ComboBox not found!";
+        }
+
+        QAbstractItemModel* wormDiagramModel = ui.tblViewWormDiagram->model();
+
+        // Retrieve the value from the analysis spin box in row 0
+        QModelIndex indexRow0 = wormDiagramModel->index(0, 1); // The second column contains our spin boxes
+        QDoubleSpinBox* wormDiagramSpinBoxRow0 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow0));
+
+        if (wormDiagramSpinBoxRow0) {
+            double valueRow0 = wormDiagramSpinBoxRow0->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 0 value:" << valueRow0; // Debug output showing the value
+            pref->setLineThickness(QString::number(valueRow0)); // Set line thickness
+        }
+        else {
+            qDebug() << "Worm Diagram SpinBox not found in row 0!"; // Log if the spin box isn't found
+        }
+
+        // Retrieve the value from the analysis spin box in row 1
+        QModelIndex indexRow1 = wormDiagramModel->index(1, 1); // Assuming spin box is in row 1
+        QDoubleSpinBox* wormDiagramSpinBoxRow1 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow1));
+
+        if (wormDiagramSpinBoxRow1) {
+            double valueRow1 = wormDiagramSpinBoxRow1->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 1 value:" << valueRow1; // Debug output showing the value
+            pref->setLineArrowWidth(QString::number(valueRow1)); // Use a new setter for row 1
+        }
+        else {
+            qDebug() << "Worm Diagram SpinBox not found in row 1!"; // Log if the spin box isn't found
+        }
+
+        QModelIndex indexRow2 = wormDiagramModel->index(2, 1); // Assuming spin box is in row 1
+        QDoubleSpinBox* wormDiagramSpinBoxRow2 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow2));
+
+        if (wormDiagramSpinBoxRow2) {
+            double valueRow2 = wormDiagramSpinBoxRow2->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 1 value:" << valueRow2; // Debug output showing the value
+            pref->setLineArrowLength(QString::number(valueRow2)); // Use a new setter for row 1
+        }
+        else {
+            qDebug() << "Worm Diagram SpinBox not found in row 1!"; // Log if the spin box isn't found
+        }
+
+        QModelIndex indexRow4 = wormDiagramModel->index(4, 1); // Assuming spin box is in row 1
+        QDoubleSpinBox* wormDiagramSpinBoxRow4 = qobject_cast<QDoubleSpinBox*>(ui.tblViewWormDiagram->indexWidget(indexRow4));
+
+        if (wormDiagramSpinBoxRow4) {
+            double valueRow4 = wormDiagramSpinBoxRow4->value(); // Get the value from the spin box
+            qDebug() << "Worm Diagram SpinBox in row 1 value:" << valueRow4; // Debug output showing the value
+            pref->setfontsize(QString::number(valueRow4)); // Use a new setter for row 1
+        }
+        else
+        {
+            qDebug() << "Worm Diagram SpinBox not found in row 1!"; // Log if the spin box isn't found
+        }
+        QModelIndex indexRow3 = wormDiagramModel->index(3, 1); // Accessing the button in row 1, column 1
+        QPushButton* colorButton = qobject_cast<QPushButton*>(ui.tblViewWormDiagram->indexWidget(indexRow3));
+
+        if (colorButton) {
+            QColor currentColor = colorButton->property("currentColor").value<QColor>();
+            pref->setLineColor(currentColor); // Store the color in ModelPreference as QString
+        }
+        else {
+            qDebug() << "Button not found in Font row 1!";
+        }
+
+        QModelIndex indexRow5 = wormDiagramModel->index(5, 1); // Accessing the button in row 1, column 1
+        QPushButton* colorButton2 = qobject_cast<QPushButton*>(ui.tblViewWormDiagram->indexWidget(indexRow5));
+
+        if (colorButton2) {
+            QColor currentColor = colorButton2->property("currentColor").value<QColor>();
+            pref->setTextcolor(currentColor); // Store the color in ModelPreference as QString
+        }
+        else {
+            qDebug() << "Button not found in Font row 1!";
+        }
+        QModelIndex index6 = wormDiagramModel->index(6, 1);
+        QCheckBox* checkBox1 = qobject_cast<QCheckBox*>(ui.tblViewWormDiagram->indexWidget(index6));
+        if (checkBox1)
+        {
+            bool isChecked = checkBox1->isChecked();
+            qDebug() << "Checkbox in row 1 state:" << isChecked;
+            pref->setTextBold(isChecked);
+
+        }
+        else
+        {
+            qDebug() << "Checkbox not found in row 1!";
+        }
+
+        QAbstractItemModel* numericMethodsModel = ui.tblViewNumericMethod->model();
+
+        // Retrieve values from QComboBox in the first two rows
+        for (int row = 0; row < 2; ++row) {
+            QModelIndex index = numericMethodsModel->index(row, 1); // Assuming combo boxes are in column 1
+            QComboBox* comboBox = qobject_cast<QComboBox*>(ui.tblViewNumericMethod->indexWidget(index));
+
+            if (comboBox) {
+                QString value = comboBox->currentText();
+                qDebug() << "Node value in Numeric Method row" << row << ":" << value;
+
+                // Use appropriate setting method based on row if needed
+                if (row == 0) {
+                    pref->setComboBoxValueChangedNumericMethodRow0(value);
+                }
+            }
+            else {
+                qDebug() << "ComboBox not found in row" << row << "!";
+            }
+        }
+
+        // Retrieve values from QDoubleSpinBox for rows 1 to 6
+        for (int row = 1; row <= 6; ++row) {
+            QModelIndex spinBoxIndex = numericMethodsModel->index(row, 1); // Assuming spin boxes are in column 1
+            QDoubleSpinBox* spinBox = qobject_cast<QDoubleSpinBox*>(ui.tblViewNumericMethod->indexWidget(spinBoxIndex));
+
+            if (spinBox) {
+                double value = spinBox->value();
+                qDebug() << "SpinBox in row" << row << "has value:" << value;
+
+                // Using specific setters based on row
+                switch (row) {
+                case 1:
+                    pref->setIterationLimit(QString::number(value));
+                    break;
+                case 2:
+                    pref->setDebugPrintingonIteration(QString::number(value));
+                    break;
+                case 3:
+                    pref->setPressureRelaxationFactor(QString::number(value));
+                    break;
+                case 4:
+                    pref->setReynoldsRelaxationFactor(QString::number(value));
+                    break;
+                case 5:
+                    pref->setMaxFlowDiscontinuity(QString::number(value));
+                    break;
+                case 6:
+                    pref->setMatrixFactor(QString::number(value));
+                    break;
+                }
+            }
+            else {
+                qDebug() << "SpinBox not found in row" << row << "!";
+            }
+        }
+
+        // Retrieve and process checkbox states
+        QModelIndex numericConditionIndex7 = numericMethodsModel->index(7, 1);
+        QCheckBox* numericCheckBox = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex7));
+
+        if (numericCheckBox) {
+            bool isChecked = numericCheckBox->isChecked();
+            qDebug() << "Checkbox in Numeric Method row 7 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow7(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Numeric Method row 7!";
+        }
+
+        // Now handle the checkbox from tblViewIntialCondition
+        QModelIndex numericConditionIndex8 = numericMethodsModel->index(8, 1);
+        QCheckBox* numericCheckBox2 = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex8));
+
+        if (numericCheckBox2) {
+            bool isChecked = numericCheckBox2->isChecked();
+            qDebug() << "Checkbox in Initial Condition row 8 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow8(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Initial Condition row 8!";
+        }
+
+        QModelIndex numericConditionIndex9 = numericMethodsModel->index(9, 1);
+        QCheckBox* numericCheckBox3 = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex9));
+
+        if (numericCheckBox3) {
+            bool isChecked = numericCheckBox3->isChecked();
+            qDebug() << "Checkbox in Initial Condition row 8 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow9(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Initial Condition row 8!";
+        }
+
+        QModelIndex numericConditionIndex10 = numericMethodsModel->index(10, 1);
+        QCheckBox* numericCheckBox4 = qobject_cast<QCheckBox*>(ui.tblViewNumericMethod->indexWidget(numericConditionIndex9));
+
+        if (numericCheckBox4) {
+            bool isChecked = numericCheckBox4->isChecked();
+            qDebug() << "Checkbox in Initial Condition row 8 state:" << isChecked;
+            pref->setcheckboxnumericconditionRow10(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in Initial Condition row 8!";
+        }
+
+        QAbstractItemModel* Devloperoptions = ui.tblViewDeveloperOptions->model();
+
+        // Checkbox in row 0
+        QModelIndex index0 = Devloperoptions->index(0, 1);
+        QCheckBox* checkBox0 = qobject_cast<QCheckBox*>(ui.tblViewDeveloperOptions->indexWidget(index0));
+        if (checkBox0) {
+            bool isChecked = checkBox0->isChecked();
+            qDebug() << "Checkbox in row 0 state:" << isChecked;
+            pref->setCheckboxCheckedDevloperOptionsRow0(isChecked);
+        }
+        else {
+            qDebug() << "Checkbox not found in row 0!";
+        }
+
+
+
+
+
+        close();
+    }
+}
+
+
+QDoubleSpinBox* PreferencesWindow::SetSpinBoxValues(double min, double max, int decimals, double step, QTableView* tableView, int row, double value) {
+    CustomSpinBox* spinBox = new CustomSpinBox(this); // Creating a new CustomSpinBox instance
+    spinBox->setMinimum(min);
+    spinBox->setMaximum(max);
+    spinBox->setDecimals(decimals);
+    spinBox->setSingleStep(step);
+    spinBox->setValue(value);
+
+    connect(spinBox, &CustomSpinBox::rangeFocused, this, [this, tableView, row](double min_value, double max_value)
+        {
+
+            // Get the model from the QTableView
+            QAbstractItemModel* model = tableView->model();
+            // Access the item at the specified row and column (column 0)
+            QModelIndex index = model->index(row, 0);
+            // Check if the index is valid and retrieve the data, if applicable
+            QString message;
+
+            if (index.isValid()) {
+                QString itemText = model->data(index).toString();
+
+                // Check which table view's spin box triggered the signal
+                if (tableView == ui.tblViewViewModel) {
+                    if (row == 2) {
+                        message = QString("%1\nSet Default Label X-Axis (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 3) {
+                        message = QString("%1\nSet Default Label Y-Axis (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                else if (tableView == ui.tblViewNode) {
+                    if (row == 0) {
+                        message = QString("%1\nSet Radius of BCNode Symbol (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 1) {
+                        message = QString("%1\nSet Radius of Aero BCNode Symbol (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 2) {
+                        message = QString("%1\nSet Radius of Free Node Symbol (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 3) {
+                        message = QString("%1\nSet Radius of Station Node Symbol (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                else if (tableView == ui.tblViewFlowResistiveElement) {
+                    if (row == 0) {
+                        message = QString("%1\nSet Size of Flow Resistive Element Symbol (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                else if (tableView == ui.tblViewArrowHead) {
+                    if (row == 0) {
+                        message = QString("%1\nSet Length of Arrows (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 1) {
+                        message = QString("%1\nSet Angle of Arrows (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                else if (tableView == ui.tblViewFont) {
+                    if (row == 0) {
+                        message = QString("%1\nSet Font Height (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                else if (tableView == ui.tblViewFitAllRange) {
+                    if (row == 0) {
+                        message = QString("%1\nSet Min Range Along Axis (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 1) {
+                        message = QString("%1\nSet Max Range Along Axis (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 2) {
+                        message = QString("%1\nSet Min Range Along Radius (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 3) {
+                        message = QString("%1\nSet Max Range Along Radius (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                else if (tableView == ui.tblViewWormDiagram) {
+                    if (row == 0) {
+                        message = QString("%1\nSet Thickness Of Worm Line Plots (min:%2pt, max:%3pt)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 1) {
+                        message = QString("%1\nSet Width of Line Arrow Head (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 2) {
+                        message = QString("%1\nSet Length of Line Arrow Head (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 4) {
+                        message = QString("%1\nSet Text Font Size of Worm Line Plots (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                else if (tableView == ui.tblViewAnalysisofVariation) {
+                    if (row == 0) {
+                        message = QString("%1\nNumber Of Monte Carlo all-factor-at-once Simulations (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 1) {
+                        message = QString("%1\nNumber Of one-factor-at-time Simulations (min:%2 max:%3)").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+
+
+                else if (tableView == ui.tblViewNumericMethod) {
+                    if (row == 1) {
+                        message = QString("%1\nSet Iteration Limit(min:%2 max:%3).[il]").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 2) {
+                        message = QString("%1\nSet Iteration Number On which to start Debug Printing. (Min: %1 , Max: %2 )[DB].").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 3) {
+                        message = QString("%1\nSet Pressure Relaxation Factor. (Min: %1 , Max: %2 )[Relax].").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 4) {
+                        message = QString("%1\nSet Reynolds Number Relaxation Factor. (Min: %1 , Max: %2 )[RFCTR].").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 5) {
+                        message = QString("%1\nSet Max Flow Discontinuity. (Min: %1 , Max: %2 )[Error].").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                    else if (row == 6) {
+                        message = QString("%1\nSet Matrix Conditioning Factor. (Min: %1 , Max: %2 )[Scale].").arg(itemText).arg(min_value).arg(max_value);
+                    }
+                }
+                // Update the text editor with the constructed message
+                updateTextEditor(message);
+            }
+        });
+
+    // Set the spin box as a widget in the specified table view index
+    QModelIndex index = tableView->model()->index(row, 1);
+    tableView->setIndexWidget(index, spinBox);
+
+    return spinBox;
+}
+
+
+QCheckBox* PreferencesWindow::SetCheckBoxValues(QTableView* tableView, int row, bool checked) {
+    // Create a new QCheckBox instance
+    QCheckBox* checkBox = new QCheckBox(this);
+    checkBox->setChecked(checked); // Set the initial checked state
+
+    connect(checkBox, &QCheckBox::toggled, this, [this, tableView, row](bool isChecked) {
+        // Get the model from the QTableView
+        QAbstractItemModel* model = tableView->model();
+
+        // Access the item at the specified row and column (column 0)
+        QModelIndex index = model->index(row, 0);
+        QString message;
+
+        // Check if the index is valid and retrieve the data, if applicable
+        if (index.isValid()) {
+            QString itemText = model->data(index).toString();
+
+            // Check which table view's checkbox triggered the signal
+            if (tableView == ui.tblViewFlowResistiveElement) {
+                // Respond based on row number for specific table view
+                if (row == 1) {
+                    message = QString("%1: CheckBox is %2").arg(itemText).arg(isChecked ? "Enabled" : "Disabled");
+                }
+            }
+            // Add similar checks for other table views as done for the spin box
+            else if (tableView == ui.tblViewIntialCondition)
+            {
+                // Handle specific rows for tblViewNode
+                if (row == 0) {
+                    message = QString("%1:\n Set Whether To Use Initial Condition Values or Not. %2").arg(itemText).arg(isChecked ? "Enabled" : "Disabled");
+                }
+                else if (row == 1)
+                    // Add more conditions as required...
+                {
+                    message = QString("%1:\n Set Whether To Update Initial Condition Values With Restart Data or Not. %2").arg(itemText).arg(isChecked ? "Enabled" : "Disabled");
+
+                }
+            }
+            if (tableView == ui.tblViewAnalysisofVariation && row == 3) { // Row where the checkbox is
+                qDebug() << "is random checked" << isChecked;
+                if (isChecked)
+                {
+                    qDebug() << "is random unchecked" << isChecked;
+
+                    // Generate a random number
+                    QString randomNumber = QString::number(1234567890); // Adjust the range as needed
+                    model->setData(model->index(2, 1), randomNumber); // Store in row 2, column 1
+                    pref->setAnalysisOfVariationNumberValueRow2(randomNumber); // Save to preferences
+
+                    message = QString("%1:\n Use Random Number Seed: Enabled and number %2 is set.").arg(itemText).arg(randomNumber);
+                }
+                else {
+                    model->setData(model->index(2, 1), ""); // Clear the random number if unchecked
+                    pref->setAnalysisOfVariationNumberValueRow2(""); // Clear stored number
+
+                    message = QString("%1:\n Use Random Number Seed: Disabled, number cleared.").arg(itemText);
+                }
+            }
+            if (tableView == ui.tblViewWormDiagram) {
+                // Respond based on row number for specific table view
+                if (row == 6) {
+                    message = QString("%1: CheckBox is %2").arg(itemText).arg(isChecked ? "Enabled" : "Disabled");
+                }
+            }
+
+            updateTextEditor(message);
+        }
+        });
+
+    // Set the checkbox as a widget in the specified table view index
+    QModelIndex index = tableView->model()->index(row, 1);
+    tableView->setIndexWidget(index, checkBox);
+
+    return checkBox;
+}
+
+
+
+
+
+QComboBox* PreferencesWindow::SetComboBoxValues(const QStringList& items, QTableView* tableView, int row, const QString& currentValue) {
+    QComboBox* comboBox = new QComboBox(this); // Creating a new QComboBox instance
+
+    // Adding items to the combo box
+    comboBox->addItems(items);
+
+    // Set the current value of the combo box, if it exists
+    if (items.contains(currentValue)) {
+        comboBox->setCurrentText(currentValue);
+    }
+
+
+    // Connect currentIndexChanged with a lambda function
+    connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+        [this, tableView, row, comboBox](int newIndex)
+        {
+            // Get the model from the QTableView
+            QAbstractItemModel* model = tableView->model();
+            QModelIndex index = model->index(row, 0);
+
+            if (index.isValid())
+            {
+                QString itemText = model->data(index).toString();
+                QString currentText = comboBox->currentText();
+
+                QString message = QString("%1\nSelected Option: %2").arg(itemText).arg(currentText);
+
+                // Update your text editor or status display with the constructed message
+                // Assuming you have an updateTextEditor method:
+                updateTextEditor(message);
+            }
+        });
+
+    // Set the combo box as a widget in the specified table view index
+    QModelIndex index = tableView->model()->index(row, 1);
+    tableView->setIndexWidget(index, comboBox);
+
+    return comboBox;
+}
+QPushButton* PreferencesWindow::createColorButton(const QColor& initialColor)
+{
+    QPushButton* colorButton = new QPushButton(this);
+    drawColorOnButton(colorButton, initialColor); // Draw button initially with the provided color
+
+    connect(colorButton, &QPushButton::clicked, this, [this, colorButton]() {
+        QColor selectedColor = QColorDialog::getColor(colorButton->property("currentColor").value<QColor>(), this, "Select a Color");
+
+        if (selectedColor.isValid()) {
+            drawColorOnButton(colorButton, selectedColor); // Update the pixmap
+            colorButton->setProperty("currentColor", selectedColor); // Update the property
+
+            QString message = QString("Selected Color (RGB): (%1, %2, %3)")
+                .arg(selectedColor.red())
+                .arg(selectedColor.green())
+                .arg(selectedColor.blue());
+
+            // Update the text editor with the constructed message
+            updateTextEditor(message);
+        }
+        });
+    colorButton->adjustSize(); // Adjust size based on content
+    //colorButton->setMinimumHeight(30); // Set a minimum height for better usability
+
+    return colorButton;
+}
+
+void PreferencesWindow::drawColorOnButton(QPushButton* button, const QColor& color)
+{
+    button->setFont(QFont("Arial", 20, QFont::Bold));
+
+    // Define a specific size for the pixmap, if needed
+    QSize pixmapSize(200, 50); // Set desired dimensions for the pixmap
+    QPixmap pixmap(pixmapSize); // Create pixmap with specific dimensions
+    pixmap.fill(Qt::transparent); // Transparent background
+
+    QPainter painter(&pixmap);
+    painter.setPen(Qt::black); // Set pen color for rectangle border
+    painter.setBrush(color); // Set brush color for rectangle fill
+
+    // Rectangle dimensions
+    int rectWidth = pixmap.width() * 0.1; // 10% of the pixmap width
+    int rectHeight = pixmap.height() * 0.4; // 40% of the pixmap height
+
+    // Center the rectangle vertically
+    int rectY = (pixmap.height() - rectHeight) / 2;
+
+    // Draw the rectangle
+    painter.drawRect(0, rectY, rectWidth, rectHeight);
+
+    // Prepare the RGB values for text
+    QString rgbText = QString("RGB(%1, %2, %3)").arg(color.red()).arg(color.green()).arg(color.blue());
+    painter.setPen(Qt::black); // Text color
+    QRect textRect(rectWidth + 2, 0, pixmap.width() - rectWidth - 10, pixmap.height() - 10); // Text area
+    QRect adjustedRect = textRect.adjusted(0, 10, 0, 0); // Adjust the second parameter to move the text down
+    painter.drawText(adjustedRect, Qt::AlignVCenter | Qt::AlignLeft, rgbText);
+    button->setIcon(QIcon(pixmap));
+    button->setIconSize(pixmap.size()); // Set the icon size to match the pixmap size
+    button->setProperty("currentColor", color); // Store the current color
+    button->setStyleSheet("text-align: left; padding-left: 10px;"); // Adjust the padding
+}
+
+void PreferencesWindow::on_listWidget_itemClicked(QListWidgetItem* item)
+{
+    QListWidgetItem* otherItem = ui.listWidget->item(0);
+    QListWidgetItem* otherItem1 = ui.listWidget->item(1);
+    QListWidgetItem* otherItem2 = ui.listWidget->item(2);
+    QListWidgetItem* otherItem3 = ui.listWidget->item(3);
+    QListWidgetItem* otherItem4 = ui.listWidget->item(4);
+    QListWidgetItem* otherItem5 = ui.listWidget->item(5);
+
+
+
+    if (otherItem == item) //o
+    {
+
+        ui.stackedWidget->setCurrentIndex(Display);
+    }
+
+    else  if (otherItem1 == item)//1
+    {
+        ui.stackedWidget->setCurrentIndex(Solver);
+
+    }
+    else  if (otherItem2 == item)//2
+    {
+        ui.stackedWidget->setCurrentIndex(Analysis_of_Variation);
+
+    }
+    else  if (otherItem3 == item)//3
+    {
+        ui.stackedWidget->setCurrentIndex(Match_Program_Options);
+
+    }
+    else  if (otherItem4 == item)
+    {
+        ui.stackedWidget->setCurrentIndex(GoalSeekings);
+
+    }
+
+    else  if (otherItem5 == item)
+    {
+        ui.stackedWidget->setCurrentIndex(Others);
+
+    }
+
+
+}
